@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Package, MapPin, FileText, Phone } from "lucide-react";
+import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 
 const Navigation = () => {
@@ -10,6 +10,7 @@ const Navigation = () => {
     { name: "Find Branch", icon: MapPin, href: "#branches" },
     { name: "Services", icon: FileText, href: "#services" },
     { name: "Contact", icon: Phone, href: "#contact" },
+    { name: "Admin", icon: LayoutDashboard, href: "/admin" },
   ];
 
   return (
