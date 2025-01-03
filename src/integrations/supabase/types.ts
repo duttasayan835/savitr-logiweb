@@ -144,6 +144,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
       schema_migrations: {
         Row: {
           created_at: string | null
@@ -168,6 +189,7 @@ export type Database = {
     }
     Enums: {
       admin_role: "admin" | "super_admin"
+      user_type: "admin" | "recipient"
     }
     CompositeTypes: {
       [_ in never]: never

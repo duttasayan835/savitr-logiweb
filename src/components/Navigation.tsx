@@ -1,22 +1,47 @@
-import { useState } from "react";
-import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleAdminClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      // If not logged in, show an alert
-      alert("Please log in to access the admin dashboard");
+      navigate("/login");
       return;
     }
     navigate("/admin");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  const handleLoginClick = () => {
+    navigate("/login");
   };
 
   const menuItems = [
@@ -51,7 +76,23 @@ const Navigation = () => {
                 <span>{item.name}</span>
               </a>
             ))}
-            <Button className="bg-primary hover:bg-primary-hover">Login</Button>
+            {user ? (
+              <Button 
+                onClick={handleLogout}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleLoginClick}
+                className="bg-primary hover:bg-primary-hover"
+              >
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -85,9 +126,23 @@ const Navigation = () => {
                   <span>{item.name}</span>
                 </a>
               ))}
-              <Button className="w-full bg-primary hover:bg-primary-hover mt-4">
-                Login
-              </Button>
+              {user ? (
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="w-full flex items-center gap-2 justify-center mt-4"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleLoginClick}
+                  className="w-full bg-primary hover:bg-primary-hover mt-4"
+                >
+                  Login
+                </Button>
+              )}
             </div>
           </div>
         )}
