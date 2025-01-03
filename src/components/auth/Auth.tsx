@@ -69,18 +69,12 @@ export function Auth() {
               }
             }
           }}
-          onSubmit={async (e) => {
-            e.preventDefault();
+          view="sign_up"
+          showLinks={false}
+          onSignUp={async ({ email, password }) => {
             setIsOpen(true);
-            // Get form data
-            const formData = new FormData(e.target as HTMLFormElement);
-            const email = formData.get('email') as string;
-            const password = formData.get('password') as string;
-            
-            // Get the stored user type
             const storedUserType = localStorage.getItem("signUpUserType");
             if (storedUserType) {
-              // Add the user type to the sign-up metadata
               await supabase.auth.signUp({
                 email,
                 password,
@@ -90,7 +84,6 @@ export function Auth() {
                   },
                 },
               });
-              // Clear the stored user type
               localStorage.removeItem("signUpUserType");
             }
           }}
