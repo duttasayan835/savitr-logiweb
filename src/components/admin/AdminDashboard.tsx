@@ -1,39 +1,66 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
-  BarChart,
-  Package,
-  Users,
-  AlertTriangle,
-  TrendingUp,
-} from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Plus, Package, Users, Clock, AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
+  const [consignments, setConsignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchConsignments();
+  }, []);
+
+  const fetchConsignments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('consignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setConsignments(data || []);
+    } catch (error) {
+      console.error('Error fetching consignments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const stats = [
     {
-      title: "Total Bookings",
-      value: "1,234",
+      title: "Total Consignments",
+      value: consignments.length,
       icon: Package,
       trend: "+12.5%",
       color: "text-primary",
     },
     {
-      title: "Active Users",
-      value: "856",
+      title: "Active Deliveries",
+      value: consignments.filter(c => c.status === 'in_transit').length,
       icon: Users,
       trend: "+5.2%",
       color: "text-secondary",
     },
     {
-      title: "Revenue",
-      value: "₹85,432",
-      icon: TrendingUp,
+      title: "Pending Slots",
+      value: consignments.filter(c => c.status === 'pending').length,
+      icon: Clock,
       trend: "+8.1%",
       color: "text-accent",
     },
     {
       title: "Issues",
-      value: "23",
+      value: consignments.filter(c => c.status === 'failed').length,
       icon: AlertTriangle,
       trend: "-2.3%",
       color: "text-destructive",
@@ -41,12 +68,12 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <div className="text-sm text-muted-foreground">
-          Last updated: {new Date().toLocaleString()}
-        </div>
+        <h1 className="text-3xl font-bold">Dynamic Slot Management System</h1>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" /> Add New Entry
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -80,23 +107,53 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Bookings</h2>
-          <div className="space-y-4">
-            {/* Placeholder for recent bookings table */}
-            <p className="text-muted-foreground">Loading recent bookings...</p>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">System Status</h2>
-          <div className="space-y-4">
-            {/* Placeholder for system status */}
-            <p className="text-muted-foreground">All systems operational</p>
-          </div>
-        </Card>
-      </div>
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold">Recent Consignments</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sl. No.</TableHead>
+                <TableHead>Consignment No.</TableHead>
+                <TableHead>Recipient Name</TableHead>
+                <TableHead>Phone No.</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Scheduled Delivery Date</TableHead>
+                <TableHead>Time Slot</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-4">
+                    Loading consignments...
+                  </TableCell>
+                </TableRow>
+              ) : consignments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-4">
+                    No consignments found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                consignments.map((consignment, index) => (
+                  <TableRow key={consignment.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{consignment.consignment_no}</TableCell>
+                    <TableCell>{consignment.recipient_name}</TableCell>
+                    <TableCell>{consignment.phone_no}</TableCell>
+                    <TableCell>{consignment.address}</TableCell>
+                    <TableCell>{new Date(consignment.expected_delivery_date).toLocaleDateString()}</TableCell>
+                    <TableCell>Morning Slot</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
     </div>
   );
 };

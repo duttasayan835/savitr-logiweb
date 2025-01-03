@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuItems = [
     { name: "Track Package", icon: Package, href: "#track" },
