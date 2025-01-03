@@ -8,7 +8,7 @@ import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 export function Auth() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [userType, setUserType] = useState<"recipient" | "admin">("recipient");
 
   const handleContinue = async () => {
