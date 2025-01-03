@@ -58,7 +58,7 @@ export function Auth() {
           }}
           providers={[]}
           onlyThirdPartyProviders={false}
-          redirectTo={window.location.origin}
+          redirectTo={`${window.location.origin}/auth/callback`}
           localization={{
             variables: {
               sign_up: {
