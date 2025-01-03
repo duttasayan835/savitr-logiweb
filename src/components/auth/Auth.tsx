@@ -12,15 +12,30 @@ export function Auth() {
   const [userType, setUserType] = useState<"recipient" | "admin">("recipient");
 
   const handleContinue = () => {
-    // Set the metadata that will be used in the database trigger
-    supabase.auth.signUp({
-      options: {
-        data: {
-          user_type: userType,
-        },
-      },
-    });
+    // Store the selected user type in localStorage
+    localStorage.setItem("signUpUserType", userType);
     setIsOpen(false);
+  };
+
+  // Custom sign up handler
+  const handleSignUp = async (event: any) => {
+    // Get the stored user type
+    const storedUserType = localStorage.getItem("signUpUserType");
+    if (storedUserType) {
+      // Add the user type to the sign-up metadata
+      const { email, password } = event.data;
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            user_type: storedUserType as "recipient" | "admin",
+          },
+        },
+      });
+      // Clear the stored user type
+      localStorage.removeItem("signUpUserType");
+    }
   };
 
   return (
@@ -66,7 +81,12 @@ export function Auth() {
           providers={[]}
           onlyThirdPartyProviders={false}
           redirectTo={window.location.origin}
-          onSignUp={() => setIsOpen(true)}
+          beforeSignUp={() => {
+            setIsOpen(true);
+            // Return false to prevent immediate sign-up
+            return false;
+          }}
+          afterSignUp={handleSignUp}
         />
       </div>
     </>
