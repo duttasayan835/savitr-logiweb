@@ -2,17 +2,29 @@ import { useState } from "react";
 import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard } from "lucide-react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+
+  const handleAdminClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      // If not logged in, show an alert
+      alert("Please log in to access the admin dashboard");
+      return;
+    }
+    navigate("/admin");
+  };
 
   const menuItems = [
     { name: "Track Package", icon: Package, href: "#track" },
     { name: "Find Branch", icon: MapPin, href: "#branches" },
     { name: "Services", icon: FileText, href: "#services" },
     { name: "Contact", icon: Phone, href: "#contact" },
-    { name: "Admin", icon: LayoutDashboard, href: "/admin" },
+    { name: "Admin", icon: LayoutDashboard, href: "/admin", onClick: handleAdminClick },
   ];
 
   return (
@@ -32,6 +44,7 @@ const Navigation = () => {
               <a
                 key={item.name}
                 href={item.href}
+                onClick={item.onClick}
                 className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
               >
                 <item.icon className="h-4 w-4" />
@@ -60,8 +73,13 @@ const Navigation = () => {
                 <a
                   key={item.name}
                   href={item.href}
+                  onClick={(e) => {
+                    if (item.onClick) {
+                      item.onClick(e);
+                    }
+                    setIsOpen(false);
+                  }}
                   className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
-                  onClick={() => setIsOpen(false)}
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.name}</span>
