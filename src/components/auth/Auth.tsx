@@ -11,8 +11,7 @@ export function Auth() {
   const [isOpen, setIsOpen] = useState(false);
   const [userType, setUserType] = useState<"recipient" | "admin">("recipient");
 
-  const handleContinue = () => {
-    // Store the selected user type in localStorage
+  const handleContinue = async () => {
     localStorage.setItem("signUpUserType", userType);
     setIsOpen(false);
   };
@@ -71,22 +70,6 @@ export function Auth() {
           }}
           view="sign_up"
           showLinks={false}
-          onSignUp={async ({ email, password }) => {
-            setIsOpen(true);
-            const storedUserType = localStorage.getItem("signUpUserType");
-            if (storedUserType) {
-              await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                  data: {
-                    user_type: storedUserType as "recipient" | "admin",
-                  },
-                },
-              });
-              localStorage.removeItem("signUpUserType");
-            }
-          }}
         />
       </div>
     </>
