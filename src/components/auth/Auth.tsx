@@ -17,27 +17,6 @@ export function Auth() {
     setIsOpen(false);
   };
 
-  // Custom sign up handler
-  const handleSignUp = async (event: any) => {
-    // Get the stored user type
-    const storedUserType = localStorage.getItem("signUpUserType");
-    if (storedUserType) {
-      // Add the user type to the sign-up metadata
-      const { email, password } = event.data;
-      await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            user_type: storedUserType as "recipient" | "admin",
-          },
-        },
-      });
-      // Clear the stored user type
-      localStorage.removeItem("signUpUserType");
-    }
-  };
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -81,12 +60,40 @@ export function Auth() {
           providers={[]}
           onlyThirdPartyProviders={false}
           redirectTo={window.location.origin}
-          beforeSignUp={() => {
-            setIsOpen(true);
-            // Return false to prevent immediate sign-up
-            return false;
+          localization={{
+            variables: {
+              sign_up: {
+                button_label: "Create account",
+                email_label: "Email",
+                password_label: "Password",
+              }
+            }
           }}
-          afterSignUp={handleSignUp}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setIsOpen(true);
+            // Get form data
+            const formData = new FormData(e.target as HTMLFormElement);
+            const email = formData.get('email') as string;
+            const password = formData.get('password') as string;
+            
+            // Get the stored user type
+            const storedUserType = localStorage.getItem("signUpUserType");
+            if (storedUserType) {
+              // Add the user type to the sign-up metadata
+              await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                  data: {
+                    user_type: storedUserType as "recipient" | "admin",
+                  },
+                },
+              });
+              // Clear the stored user type
+              localStorage.removeItem("signUpUserType");
+            }
+          }}
         />
       </div>
     </>
