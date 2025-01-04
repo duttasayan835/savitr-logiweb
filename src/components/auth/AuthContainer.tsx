@@ -1,12 +1,33 @@
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContainerProps {
   view: "sign_up" | "sign_in";
 }
 
 export function AuthContainer({ view }: AuthContainerProps) {
+  const { toast } = useToast();
+
+  const handleError = (error: Error) => {
+    console.error("Auth error:", error);
+    
+    if (error.message.includes("invalid_credentials")) {
+      toast({
+        title: "Invalid credentials",
+        description: "Please check your email and password and try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Authentication error",
+        description: "An error occurred during authentication. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <SupabaseAuth
       supabaseClient={supabase}
@@ -40,6 +61,7 @@ export function AuthContainer({ view }: AuthContainerProps) {
       }}
       view={view}
       showLinks={false}
+      onError={handleError}
     />
   );
 }
