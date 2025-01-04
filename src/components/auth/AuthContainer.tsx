@@ -3,6 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { AuthError } from "@supabase/supabase-js";
 
 interface AuthContainerProps {
   view: "sign_up" | "sign_in";
@@ -17,19 +18,37 @@ export function AuthContainer({ view }: AuthContainerProps) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event);
       
-      if (event === "USER_DELETED") {
-        toast({
-          title: "Authentication error",
-          description: "Invalid credentials. Please check your email and password.",
-          variant: "destructive",
-        });
+      if (event === "SIGNED_OUT") {
+        console.log("User signed out");
       } else if (event === "SIGNED_IN") {
         console.log("User signed in successfully:", session?.user.email);
+      } else if (event === "USER_UPDATED") {
+        console.log("User updated:", session?.user.email);
+      }
+    });
+
+    // Listen for auth errors
+    const authListener = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        console.log("Successful sign in");
+      } else {
+        // Check for auth errors in the URL
+        const url = new URL(window.location.href);
+        const errorDescription = url.searchParams.get("error_description");
+        
+        if (errorDescription) {
+          toast({
+            title: "Authentication error",
+            description: "Invalid credentials. Please check your email and password.",
+            variant: "destructive",
+          });
+        }
       }
     });
 
     return () => {
       subscription.unsubscribe();
+      authListener.data.subscription.unsubscribe();
     };
   }, [toast]);
 
