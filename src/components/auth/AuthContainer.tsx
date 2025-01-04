@@ -2,6 +2,7 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface AuthContainerProps {
   view: "sign_up" | "sign_in";
@@ -10,23 +11,27 @@ interface AuthContainerProps {
 export function AuthContainer({ view }: AuthContainerProps) {
   const { toast } = useToast();
 
-  const handleError = (error: Error) => {
-    console.error("Auth error:", error);
-    
-    if (error.message.includes("invalid_credentials")) {
-      toast({
-        title: "Invalid credentials",
-        description: "Please check your email and password and try again.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Authentication error",
-        description: "An error occurred during authentication. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event);
+      
+      if (event === "USER_DELETED") {
+        toast({
+          title: "Authentication error",
+          description: "Invalid credentials. Please check your email and password.",
+          variant: "destructive",
+        });
+      } else if (event === "SIGNED_IN") {
+        console.log("User signed in successfully:", session?.user.email);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   return (
     <SupabaseAuth
@@ -61,7 +66,6 @@ export function AuthContainer({ view }: AuthContainerProps) {
       }}
       view={view}
       showLinks={false}
-      onError={handleError}
     />
   );
 }
