@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "../ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { AccountTypeDialog } from "./AccountTypeDialog";
 import { AuthTabs } from "./AuthTabs";
 
@@ -32,9 +32,8 @@ export function Auth() {
     }
   });
 
-  // Handle auth errors
-  const handleAuthError = (error: Error) => {
-    console.log("Auth error:", error);
+  const handleError = (error: Error) => {
+    console.error("Auth error:", error);
     
     if (error.message.includes("User already registered")) {
       toast({
@@ -43,6 +42,18 @@ export function Auth() {
         variant: "destructive",
       });
       setView("sign_in");
+    } else if (error.message.includes("Invalid login credentials")) {
+      toast({
+        title: "Invalid credentials",
+        description: "Please check your email and password and try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -91,7 +102,7 @@ export function Auth() {
           }}
           view={view}
           showLinks={false}
-          onError={handleAuthError}
+          onError={handleError}
         />
       </div>
     </>
