@@ -24,8 +24,23 @@ export function Auth() {
   };
 
   // Handle auth state changes
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'USER_ALREADY_EXISTS') {
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log("Auth event:", event);
+    
+    if (event === "SIGNED_OUT") {
+      // Handle sign out
+      console.log("User signed out");
+    } else if (event === "SIGNED_IN") {
+      // Handle successful sign in
+      console.log("User signed in:", session?.user.email);
+    }
+  });
+
+  // Add error handling for sign up
+  supabase.auth.onError((error) => {
+    console.log("Auth error:", error);
+    
+    if (error.message.includes("User already registered")) {
       toast({
         title: "Account exists",
         description: "This email is already registered. Please sign in instead.",
