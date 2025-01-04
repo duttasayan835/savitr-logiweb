@@ -3,18 +3,37 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { useToast } from "../ui/use-toast";
 
 export function Auth() {
   const [isOpen, setIsOpen] = useState(true);
   const [userType, setUserType] = useState<"recipient" | "admin">("recipient");
+  const [view, setView] = useState<"sign_up" | "sign_in">("sign_up");
+  const { toast } = useToast();
 
   const handleContinue = async () => {
     localStorage.setItem("signUpUserType", userType);
     setIsOpen(false);
   };
+
+  const handleViewChange = (newView: "sign_up" | "sign_in") => {
+    setView(newView);
+  };
+
+  // Handle auth state changes
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'USER_ALREADY_EXISTS') {
+      toast({
+        title: "Account exists",
+        description: "This email is already registered. Please sign in instead.",
+        variant: "destructive",
+      });
+      setView("sign_in");
+    }
+  });
 
   return (
     <>
@@ -22,6 +41,7 @@ export function Auth() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Choose Account Type</DialogTitle>
+            <DialogDescription>Select your account type to continue</DialogDescription>
           </DialogHeader>
           <div className="py-6">
             <RadioGroup
@@ -43,6 +63,21 @@ export function Auth() {
       </Dialog>
 
       <div className="w-full max-w-[400px] mx-auto p-4 rounded-lg bg-white shadow-lg">
+        <div className="mb-4 flex justify-center space-x-4">
+          <Button
+            variant={view === "sign_up" ? "default" : "outline"}
+            onClick={() => handleViewChange("sign_up")}
+          >
+            Sign Up
+          </Button>
+          <Button
+            variant={view === "sign_in" ? "default" : "outline"}
+            onClick={() => handleViewChange("sign_in")}
+          >
+            Sign In
+          </Button>
+        </div>
+
         <SupabaseAuth
           supabaseClient={supabase}
           appearance={{
@@ -65,10 +100,15 @@ export function Auth() {
                 button_label: "Create account",
                 email_label: "Email",
                 password_label: "Password",
+              },
+              sign_in: {
+                button_label: "Sign in",
+                email_label: "Email",
+                password_label: "Password",
               }
             }
           }}
-          view="sign_up"
+          view={view}
           showLinks={false}
         />
       </div>
