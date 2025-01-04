@@ -32,31 +32,6 @@ export function Auth() {
     }
   });
 
-  const handleError = (error: Error) => {
-    console.error("Auth error:", error);
-    
-    if (error.message.includes("User already registered")) {
-      toast({
-        title: "Account exists",
-        description: "This email is already registered. Please sign in instead.",
-        variant: "destructive",
-      });
-      setView("sign_in");
-    } else if (error.message.includes("Invalid login credentials")) {
-      toast({
-        title: "Invalid credentials",
-        description: "Please check your email and password and try again.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <>
       <AccountTypeDialog
@@ -102,7 +77,6 @@ export function Auth() {
           }}
           view={view}
           showLinks={false}
-          onError={handleError}
         />
       </div>
     </>
