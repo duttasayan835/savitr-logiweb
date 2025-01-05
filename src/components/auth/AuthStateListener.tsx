@@ -62,15 +62,16 @@ export function AuthStateListener() {
     };
 
     // Subscribe to auth state changes and handle errors
-    const authListener = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "USER_ERROR") {
-        handleAuthError(session?.error as AuthError);
+    const authErrorListener = supabase.auth.onAuthStateChange((event, session) => {
+      const error = (session as any)?.error as AuthError | undefined;
+      if (error) {
+        handleAuthError(error);
       }
     });
 
     return () => {
       subscription.unsubscribe();
-      authListener.data.subscription.unsubscribe();
+      authErrorListener.data.subscription.unsubscribe();
     };
   }, [toast]);
 
