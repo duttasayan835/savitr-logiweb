@@ -3,6 +3,7 @@ import { AuthContainer } from "./AuthContainer";
 import { AuthStateListener } from "./AuthStateListener";
 import { AccountTypeDialog } from "./AccountTypeDialog";
 import { AuthTabs } from "./AuthTabs";
+import { Toaster } from "@/components/ui/toaster";
 
 export function Auth() {
   const [isOpen, setIsOpen] = useState(true);
@@ -21,6 +22,7 @@ export function Auth() {
   return (
     <>
       <AuthStateListener />
+      <Toaster />
       
       <AccountTypeDialog
         isOpen={isOpen}
