@@ -34,7 +34,7 @@ export function Auth() {
 
       <div className="w-full max-w-[400px] mx-auto p-4 rounded-lg bg-white shadow-lg">
         <AuthTabs view={view} onViewChange={handleViewChange} />
-        <AuthContainer view={view} />
+        <AuthContainer view={view} onViewChange={handleViewChange} />
       </div>
     </>
   );

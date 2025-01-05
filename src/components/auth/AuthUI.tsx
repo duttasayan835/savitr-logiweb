@@ -6,9 +6,10 @@ import { useEffect } from "react";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
+  onViewChange?: (view: "sign_up" | "sign_in") => void;
 }
 
-export function AuthUI({ view }: AuthUIProps) {
+export function AuthUI({ view, onViewChange }: AuthUIProps) {
   const { toast } = useToast();
   const redirectTo = `${window.location.origin}/auth/callback`;
   console.log("Redirect URL:", redirectTo);
@@ -24,6 +25,8 @@ export function AuthUI({ view }: AuthUIProps) {
           description: "This email is already registered. Please sign in instead.",
           variant: "destructive",
         });
+        // Switch to sign in view if the user already exists
+        onViewChange?.("sign_in");
       }
     };
 
@@ -31,6 +34,10 @@ export function AuthUI({ view }: AuthUIProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
         console.log("User signed in successfully:", session?.user.email);
+        toast({
+          title: "Welcome back!",
+          description: "You have successfully signed in.",
+        });
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
       }
@@ -45,7 +52,7 @@ export function AuthUI({ view }: AuthUIProps) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [toast, onViewChange]);
 
   return (
     <SupabaseAuth
