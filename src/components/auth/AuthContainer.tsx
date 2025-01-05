@@ -23,44 +23,21 @@ export function AuthContainer({ view }: AuthContainerProps) {
         console.log("User signed in successfully:", session?.user.email);
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user.email);
-      }
-
-      // Handle session expiration
-      if (!session && event === "TOKEN_REFRESHED") {
-        console.error("Session expired");
-        toast({
-          title: "Session expired",
-          description: "Your session has expired. Please sign in again.",
-          variant: "destructive",
-        });
+      } else if (event === "TOKEN_REFRESHED") {
+        // Handle session expiration
+        if (!session) {
+          console.error("Session expired");
+          toast({
+            title: "Session expired",
+            description: "Your session has expired. Please sign in again.",
+            variant: "destructive",
+          });
+        }
       }
     });
 
-    // Listen for auth errors
-    const authErrorHandler = (error: any) => {
-      console.error("Auth error:", error);
-      
-      if (error.message?.includes("Invalid login credentials")) {
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password and try again.",
-          variant: "destructive",
-        });
-      } else if (error.message?.includes("User already registered")) {
-        toast({
-          title: "Account exists",
-          description: "An account with this email already exists. Please sign in instead.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    // Subscribe to auth error events
-    supabase.auth.onError(authErrorHandler);
-
     return () => {
       subscription.unsubscribe();
-      supabase.auth.onError(null);
     };
   }, [toast]);
 
