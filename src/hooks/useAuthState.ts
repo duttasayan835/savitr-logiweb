@@ -13,6 +13,10 @@ export function useAuthState() {
       
       if (event === "SIGNED_OUT") {
         console.log("User signed out");
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
       } else if (event === "SIGNED_IN") {
         console.log("User signed in successfully:", session?.user.email);
         toast({
@@ -30,7 +34,7 @@ export function useAuthState() {
             variant: "destructive",
           });
         }
-      } else if (event === "INITIAL_SESSION" && !session) {
+      } else if (event === "INITIAL_SESSION") {
         console.log("Checking for auth errors...");
         
         // Check URL parameters for error messages
@@ -38,6 +42,7 @@ export function useAuthState() {
         const errorDescription = urlParams.get('error_description');
         const errorCode = urlParams.get('error_code');
         const error = urlParams.get('error');
+        const bodyStr = urlParams.get('body');
         
         if (error === "invalid_credentials" || errorDescription?.includes("Invalid login credentials")) {
           toast({
@@ -51,21 +56,18 @@ export function useAuthState() {
             description: "This email is already registered. Please sign in instead.",
             variant: "destructive",
           });
-        } else if (errorCode === "422") {
-          const bodyStr = urlParams.get('body');
-          if (bodyStr) {
-            try {
-              const body = JSON.parse(bodyStr);
-              if (body.code === "user_already_exists") {
-                toast({
-                  title: "Account already exists",
-                  description: "This email is already registered. Please sign in instead.",
-                  variant: "destructive",
-                });
-              }
-            } catch (e) {
-              console.error("Error parsing body:", e);
+        } else if (bodyStr) {
+          try {
+            const body = JSON.parse(bodyStr);
+            if (body.code === "user_already_exists") {
+              toast({
+                title: "Account already exists",
+                description: "This email is already registered. Please sign in instead.",
+                variant: "destructive",
+              });
             }
+          } catch (e) {
+            console.error("Error parsing body:", e);
           }
         }
       }
