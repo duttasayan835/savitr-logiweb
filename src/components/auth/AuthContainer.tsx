@@ -32,8 +32,9 @@ export function AuthContainer({ view }: AuthContainerProps) {
             variant: "destructive",
           });
         }
-      } else if (event === "SIGNED_IN_ERROR") {
-        console.error("Sign in error");
+      } else if (event === "INITIAL_SESSION" && !session) {
+        // Handle invalid credentials case
+        console.error("Authentication failed");
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
