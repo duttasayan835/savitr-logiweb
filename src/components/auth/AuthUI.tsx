@@ -1,13 +1,14 @@
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
 }
 
 export function AuthUI({ view }: AuthUIProps) {
-  // Get the current URL's origin for the redirect
+  const { toast } = useToast();
   const redirectTo = `${window.location.origin}/auth/callback`;
   console.log("Redirect URL:", redirectTo);
 
@@ -49,7 +50,23 @@ export function AuthUI({ view }: AuthUIProps) {
         }
       }}
       view={view}
-      showLinks={false}
+      showLinks={true}
+      onError={(error) => {
+        console.error("Auth error:", error);
+        if (error.message.includes("user_already_exists") || error.message.includes("User already registered")) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes("invalid_credentials")) {
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password and try again.",
+            variant: "destructive",
+          });
+        }
+      }}
     />
   );
 }

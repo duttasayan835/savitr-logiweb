@@ -34,42 +34,6 @@ export function useAuthState() {
             variant: "destructive",
           });
         }
-      } else if (event === "INITIAL_SESSION") {
-        console.log("Checking for auth errors...");
-        
-        // Check URL parameters for error messages
-        const urlParams = new URLSearchParams(window.location.search);
-        const errorDescription = urlParams.get('error_description');
-        const errorCode = urlParams.get('error_code');
-        const error = urlParams.get('error');
-        const bodyStr = urlParams.get('body');
-        
-        if (error === "invalid_credentials" || errorDescription?.includes("Invalid login credentials")) {
-          toast({
-            title: "Invalid credentials",
-            description: "Please check your email and password and try again.",
-            variant: "destructive",
-          });
-        } else if (errorDescription?.includes("User already registered") || error === "user_already_registered") {
-          toast({
-            title: "Account already exists",
-            description: "This email is already registered. Please sign in instead.",
-            variant: "destructive",
-          });
-        } else if (bodyStr) {
-          try {
-            const body = JSON.parse(bodyStr);
-            if (body.code === "user_already_exists") {
-              toast({
-                title: "Account already exists",
-                description: "This email is already registered. Please sign in instead.",
-                variant: "destructive",
-              });
-            }
-          } catch (e) {
-            console.error("Error parsing body:", e);
-          }
-        }
       }
     });
 
