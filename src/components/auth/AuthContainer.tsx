@@ -14,7 +14,7 @@ export function AuthContainer({ view }: AuthContainerProps) {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       
       if (event === "SIGNED_OUT") {
@@ -24,7 +24,6 @@ export function AuthContainer({ view }: AuthContainerProps) {
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user.email);
       } else if (event === "TOKEN_REFRESHED") {
-        // Handle session expiration
         if (!session) {
           console.error("Session expired");
           toast({
@@ -33,6 +32,13 @@ export function AuthContainer({ view }: AuthContainerProps) {
             variant: "destructive",
           });
         }
+      } else if (event === "SIGNED_IN_ERROR") {
+        console.error("Sign in error");
+        toast({
+          title: "Invalid credentials",
+          description: "Please check your email and password and try again.",
+          variant: "destructive",
+        });
       }
     });
 
