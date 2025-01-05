@@ -10,6 +10,7 @@ export function useAuthState() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
+      console.log("Session:", session);
       
       if (event === "SIGNED_OUT") {
         console.log("User signed out");
@@ -34,11 +35,50 @@ export function useAuthState() {
             variant: "destructive",
           });
         }
+      } else if (event === "SIGNED_UP") {
+        console.log("User signed up successfully:", session?.user.email);
+        toast({
+          title: "Welcome!",
+          description: "Your account has been created successfully.",
+        });
+      } else if (event === "USER_DELETED") {
+        console.log("User account deleted");
+        toast({
+          title: "Account deleted",
+          description: "Your account has been deleted successfully.",
+        });
+      }
+    });
+
+    // Listen for auth errors
+    window.addEventListener('supabase.auth.error', (event: any) => {
+      console.error("Auth error:", event.detail);
+      const error = event.detail;
+
+      if (error.message.includes("user_already_exists") || error.message.includes("User already registered")) {
+        toast({
+          title: "Account exists",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes("invalid_credentials")) {
+        toast({
+          title: "Invalid credentials",
+          description: "Please check your email and password and try again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "An error occurred. Please try again.",
+          variant: "destructive",
+        });
       }
     });
 
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('supabase.auth.error', () => {});
     };
   }, [toast]);
 }

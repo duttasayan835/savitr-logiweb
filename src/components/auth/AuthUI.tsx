@@ -1,14 +1,12 @@
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
 }
 
 export function AuthUI({ view }: AuthUIProps) {
-  const { toast } = useToast();
   const redirectTo = `${window.location.origin}/auth/callback`;
   console.log("Redirect URL:", redirectTo);
 
