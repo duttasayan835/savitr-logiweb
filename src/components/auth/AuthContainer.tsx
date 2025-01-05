@@ -23,20 +23,14 @@ export function AuthContainer({ view }: AuthContainerProps) {
         console.log("User signed in successfully:", session?.user.email);
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user.email);
-      }
-
-      // Handle authentication errors through error handling in the sign-in method
-      const handleError = (error: Error) => {
-        console.error("Authentication error:", error);
+      } else if (event === "SIGNED_IN_ERROR") {
+        console.error("Sign in error occurred");
         toast({
           title: "Authentication error",
           description: "Invalid email or password. Please try again.",
           variant: "destructive",
         });
-      };
-
-      // Add error listener for auth errors
-      supabase.auth.onError(handleError);
+      }
     });
 
     return () => {
