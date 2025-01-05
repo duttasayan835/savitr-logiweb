@@ -1,14 +1,51 @@
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
 }
 
 export function AuthUI({ view }: AuthUIProps) {
+  const { toast } = useToast();
   const redirectTo = `${window.location.origin}/auth/callback`;
   console.log("Redirect URL:", redirectTo);
+
+  useEffect(() => {
+    // Listen for auth errors
+    const handleAuthError = (error: any) => {
+      console.error("Auth error details:", error);
+      
+      if (error.message.includes("user_already_exists") || error.message.includes("User already registered")) {
+        toast({
+          title: "Account exists",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN") {
+        console.log("User signed in successfully:", session?.user.email);
+      } else if (event === "SIGNED_OUT") {
+        console.log("User signed out");
+      }
+
+      // Check for auth errors in the session
+      const error = (session as any)?.error;
+      if (error) {
+        handleAuthError(error);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   return (
     <SupabaseAuth
