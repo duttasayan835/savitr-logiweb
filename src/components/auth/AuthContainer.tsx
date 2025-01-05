@@ -36,7 +36,32 @@ export function AuthContainer({ view }: AuthContainerProps) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for auth errors
+    const authErrorHandler = (error: any) => {
+      console.error("Auth error:", error);
+      
+      if (error.message?.includes("Invalid login credentials")) {
+        toast({
+          title: "Invalid credentials",
+          description: "Please check your email and password and try again.",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes("User already registered")) {
+        toast({
+          title: "Account exists",
+          description: "An account with this email already exists. Please sign in instead.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    // Subscribe to auth error events
+    supabase.auth.onError(authErrorHandler);
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.auth.onError(null);
+    };
   }, [toast]);
 
   return (
@@ -62,11 +87,15 @@ export function AuthContainer({ view }: AuthContainerProps) {
             button_label: "Create account",
             email_label: "Email",
             password_label: "Password",
+            email_input_placeholder: "Your email address",
+            password_input_placeholder: "Choose a strong password",
           },
           sign_in: {
             button_label: "Sign in",
             email_label: "Email",
             password_label: "Password",
+            email_input_placeholder: "Your email address",
+            password_input_placeholder: "Your password",
           }
         }
       }}
