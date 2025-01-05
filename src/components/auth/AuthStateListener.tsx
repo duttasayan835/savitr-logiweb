@@ -35,18 +35,25 @@ export function AuthStateListener() {
       }
     });
 
-    // Listen for auth errors
+    // Create and dispatch a custom event for auth errors
+    const dispatchAuthError = (error: AuthError) => {
+      const event = new CustomEvent('supabase.auth.error', { detail: error });
+      window.dispatchEvent(event);
+    };
+
+    // Handle auth errors
     const handleAuthError = (event: CustomEvent<AuthError>) => {
       console.error("Auth error:", event.detail);
       const error = event.detail;
+      const errorMessage = error.message.toLowerCase();
 
-      if (error.message.includes("invalid_credentials")) {
+      if (errorMessage.includes("invalid_credentials") || errorMessage.includes("invalid login credentials")) {
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
           variant: "destructive",
         });
-      } else if (error.message.includes("user_already_exists")) {
+      } else if (errorMessage.includes("user_already_exists") || errorMessage.includes("user already registered")) {
         toast({
           title: "Account exists",
           description: "This email is already registered. Please sign in instead.",
@@ -61,10 +68,17 @@ export function AuthStateListener() {
       }
     };
 
+    // Listen for auth errors from Supabase client
+    const { data: { subscription: errorSubscription } } = supabase.auth.onError((error) => {
+      console.error("Supabase auth error:", error);
+      dispatchAuthError(error);
+    });
+
     window.addEventListener('supabase.auth.error', handleAuthError as EventListener);
 
     return () => {
       subscription.unsubscribe();
+      errorSubscription?.unsubscribe();
       window.removeEventListener('supabase.auth.error', handleAuthError as EventListener);
     };
   }, [toast]);
