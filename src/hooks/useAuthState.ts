@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthError } from "@supabase/supabase-js";
 
 export function useAuthState() {
   const { toast } = useToast();
@@ -35,23 +36,11 @@ export function useAuthState() {
             variant: "destructive",
           });
         }
-      } else if (event === "SIGNED_UP") {
-        console.log("User signed up successfully:", session?.user.email);
-        toast({
-          title: "Welcome!",
-          description: "Your account has been created successfully.",
-        });
-      } else if (event === "USER_DELETED") {
-        console.log("User account deleted");
-        toast({
-          title: "Account deleted",
-          description: "Your account has been deleted successfully.",
-        });
       }
     });
 
     // Listen for auth errors
-    window.addEventListener('supabase.auth.error', (event: any) => {
+    const handleAuthError = (event: CustomEvent<AuthError>) => {
       console.error("Auth error:", event.detail);
       const error = event.detail;
 
@@ -74,11 +63,13 @@ export function useAuthState() {
           variant: "destructive",
         });
       }
-    });
+    };
+
+    window.addEventListener('supabase.auth.error', handleAuthError as EventListener);
 
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('supabase.auth.error', () => {});
+      window.removeEventListener('supabase.auth.error', handleAuthError as EventListener);
     };
   }, [toast]);
 }
