@@ -25,7 +25,6 @@ export function AuthUI({ view }: AuthUIProps) {
         }
       }}
       providers={[]}
-      onlyThirdPartyProviders={false}
       redirectTo={redirectTo}
       localization={{
         variables: {
