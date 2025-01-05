@@ -37,36 +37,31 @@ export function AuthStateListener() {
       // Handle auth errors from the session
       const error = (session as any)?.error as AuthError | undefined;
       if (error) {
-        handleAuthError(error);
+        console.error("Auth error:", error);
+        const errorMessage = error.message.toLowerCase();
+        const errorCode = error.message;
+
+        if (errorCode.includes("user_already_exists") || errorMessage.includes("already registered")) {
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else if (errorCode.includes("invalid_credentials") || errorMessage.includes("invalid login credentials")) {
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password and try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message || "An error occurred during authentication.",
+            variant: "destructive",
+          });
+        }
       }
     });
-
-    // Create a custom event handler for auth errors
-    const handleAuthError = (error: AuthError) => {
-      console.error("Auth error:", error);
-      const errorMessage = error.message.toLowerCase();
-      const errorCode = (error as any).code?.toLowerCase();
-
-      if (errorCode === "user_already_exists" || errorMessage.includes("user already registered")) {
-        toast({
-          title: "Account exists",
-          description: "This email is already registered. Please sign in instead.",
-          variant: "destructive",
-        });
-      } else if (errorCode === "invalid_credentials" || errorMessage.includes("invalid login credentials")) {
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password and try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "An error occurred during authentication.",
-          variant: "destructive",
-        });
-      }
-    };
 
     return () => {
       subscription.unsubscribe();
