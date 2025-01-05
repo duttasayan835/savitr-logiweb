@@ -51,22 +51,6 @@ export function AuthUI({ view }: AuthUIProps) {
       }}
       view={view}
       showLinks={true}
-      onError={(error) => {
-        console.error("Auth error:", error);
-        if (error.message.includes("user_already_exists") || error.message.includes("User already registered")) {
-          toast({
-            title: "Account exists",
-            description: "This email is already registered. Please sign in instead.",
-            variant: "destructive",
-          });
-        } else if (error.message.includes("invalid_credentials")) {
-          toast({
-            title: "Invalid credentials",
-            description: "Please check your email and password and try again.",
-            variant: "destructive",
-          });
-        }
-      }}
     />
   );
 }
