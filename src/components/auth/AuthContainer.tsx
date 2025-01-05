@@ -23,6 +23,13 @@ export function AuthContainer({ view }: AuthContainerProps) {
         console.log("User signed in successfully:", session?.user.email);
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user.email);
+      } else if (event === "AUTH_ERROR") {
+        console.error("Authentication error occurred");
+        toast({
+          title: "Authentication error",
+          description: "Invalid email or password. Please try again.",
+          variant: "destructive",
+        });
       }
     });
 
@@ -64,16 +71,6 @@ export function AuthContainer({ view }: AuthContainerProps) {
       }}
       view={view}
       showLinks={false}
-      onError={(error) => {
-        console.error("Auth error:", error);
-        toast({
-          title: "Authentication error",
-          description: error.message === "Invalid login credentials" 
-            ? "Invalid email or password. Please try again."
-            : "An error occurred during authentication. Please try again.",
-          variant: "destructive",
-        });
-      }}
     />
   );
 }
