@@ -39,17 +39,18 @@ export function AuthStateListener() {
     const handleAuthError = (error: AuthError) => {
       console.error("Auth error:", error);
       const errorMessage = error.message.toLowerCase();
+      const errorCode = (error as any).code?.toLowerCase();
 
-      if (errorMessage.includes("invalid_credentials") || errorMessage.includes("invalid login credentials")) {
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password and try again.",
-          variant: "destructive",
-        });
-      } else if (errorMessage.includes("user_already_exists") || errorMessage.includes("user already registered")) {
+      if (errorCode === "user_already_exists" || errorMessage.includes("user already registered")) {
         toast({
           title: "Account exists",
           description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      } else if (errorCode === "invalid_credentials" || errorMessage.includes("invalid login credentials")) {
+        toast({
+          title: "Invalid credentials",
+          description: "Please check your email and password and try again.",
           variant: "destructive",
         });
       } else {
@@ -62,8 +63,7 @@ export function AuthStateListener() {
     };
 
     // Subscribe to auth state changes and handle errors
-    const authErrorListener = supabase.auth.onAuthStateChange((event, session) => {
-      const error = (session as any)?.error as AuthError | undefined;
+    const authErrorSubscription = supabase.auth.onError((error) => {
       if (error) {
         handleAuthError(error);
       }
@@ -71,7 +71,7 @@ export function AuthStateListener() {
 
     return () => {
       subscription.unsubscribe();
-      authErrorListener.data.subscription.unsubscribe();
+      authErrorSubscription.unsubscribe();
     };
   }, [toast]);
 
