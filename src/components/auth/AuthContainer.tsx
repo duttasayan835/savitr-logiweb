@@ -23,10 +23,13 @@ export function AuthContainer({ view }: AuthContainerProps) {
         console.log("User signed in successfully:", session?.user.email);
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user.email);
-      } else if (event === "TOKEN_REFRESH_FAILED") {
-        console.error("Authentication error: Token refresh failed");
+      }
+
+      // Handle session expiration
+      if (!session && event === "TOKEN_REFRESHED") {
+        console.error("Session expired");
         toast({
-          title: "Authentication error",
+          title: "Session expired",
           description: "Your session has expired. Please sign in again.",
           variant: "destructive",
         });
