@@ -33,13 +33,22 @@ export function AuthContainer({ view }: AuthContainerProps) {
           });
         }
       } else if (event === "INITIAL_SESSION" && !session) {
-        // Handle invalid credentials case
-        console.error("Authentication failed");
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password and try again.",
-          variant: "destructive",
-        });
+        const error = await supabase.auth.getError();
+        console.error("Authentication error:", error);
+        
+        if (error?.message?.includes("User already registered")) {
+          toast({
+            title: "Account already exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Authentication failed",
+            description: "Please check your credentials and try again.",
+            variant: "destructive",
+          });
+        }
       }
     });
 
