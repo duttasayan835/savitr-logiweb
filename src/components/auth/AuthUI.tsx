@@ -7,6 +7,10 @@ interface AuthUIProps {
 }
 
 export function AuthUI({ view }: AuthUIProps) {
+  // Get the current URL's origin for the redirect
+  const redirectTo = `${window.location.origin}/auth/callback`;
+  console.log("Redirect URL:", redirectTo);
+
   return (
     <SupabaseAuth
       supabaseClient={supabase}
@@ -23,7 +27,7 @@ export function AuthUI({ view }: AuthUIProps) {
       }}
       providers={[]}
       onlyThirdPartyProviders={false}
-      redirectTo={window.location.origin + "/auth/callback"}
+      redirectTo={redirectTo}
       localization={{
         variables: {
           sign_up: {
