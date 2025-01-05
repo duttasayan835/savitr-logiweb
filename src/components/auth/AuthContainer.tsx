@@ -33,10 +33,13 @@ export function AuthContainer({ view }: AuthContainerProps) {
           });
         }
       } else if (event === "INITIAL_SESSION" && !session) {
-        const error = await supabase.auth.getError();
-        console.error("Authentication error:", error);
+        console.error("Authentication failed");
         
-        if (error?.message?.includes("User already registered")) {
+        // Check if there's an error in the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorDescription = urlParams.get('error_description');
+        
+        if (errorDescription?.includes("User already registered")) {
           toast({
             title: "Account already exists",
             description: "This email is already registered. Please sign in instead.",
