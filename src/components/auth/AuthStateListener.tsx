@@ -35,16 +35,9 @@ export function AuthStateListener() {
       }
     });
 
-    // Create and dispatch a custom event for auth errors
-    const dispatchAuthError = (error: AuthError) => {
-      const event = new CustomEvent('supabase.auth.error', { detail: error });
-      window.dispatchEvent(event);
-    };
-
-    // Handle auth errors
-    const handleAuthError = (event: CustomEvent<AuthError>) => {
-      console.error("Auth error:", event.detail);
-      const error = event.detail;
+    // Create a custom event handler for auth errors
+    const handleAuthError = (error: AuthError) => {
+      console.error("Auth error:", error);
       const errorMessage = error.message.toLowerCase();
 
       if (errorMessage.includes("invalid_credentials") || errorMessage.includes("invalid login credentials")) {
@@ -68,18 +61,16 @@ export function AuthStateListener() {
       }
     };
 
-    // Listen for auth errors from Supabase client
-    const { data: { subscription: errorSubscription } } = supabase.auth.onError((error) => {
-      console.error("Supabase auth error:", error);
-      dispatchAuthError(error);
+    // Subscribe to auth state changes and handle errors
+    const authListener = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "USER_ERROR") {
+        handleAuthError(session?.error as AuthError);
+      }
     });
-
-    window.addEventListener('supabase.auth.error', handleAuthError as EventListener);
 
     return () => {
       subscription.unsubscribe();
-      errorSubscription?.unsubscribe();
-      window.removeEventListener('supabase.auth.error', handleAuthError as EventListener);
+      authListener.data.subscription.unsubscribe();
     };
   }, [toast]);
 
