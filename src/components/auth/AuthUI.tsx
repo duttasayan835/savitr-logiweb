@@ -18,15 +18,28 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
     // Listen for auth errors
     const handleAuthError = (error: any) => {
       console.error("Auth error details:", error);
-      const errorMessage = error.message.toLowerCase();
       
-      if (errorMessage.includes("missing email")) {
+      // Parse error message from response body if available
+      let errorMessage = error.message;
+      try {
+        if (error.body) {
+          const bodyError = JSON.parse(error.body);
+          errorMessage = bodyError.message;
+        }
+      } catch (e) {
+        console.error("Error parsing error body:", e);
+      }
+      
+      const errorLower = errorMessage.toLowerCase();
+      console.log("Processed error message:", errorLower);
+
+      if (errorLower.includes("missing email")) {
         toast({
           title: "Missing Email",
           description: "Please enter your email address.",
           variant: "destructive",
         });
-      } else if (errorMessage.includes("user_already_exists") || errorMessage.includes("already registered")) {
+      } else if (errorLower.includes("user_already_exists") || errorLower.includes("already registered")) {
         console.log("User already exists, switching to sign in view");
         toast({
           title: "Account exists",
@@ -35,7 +48,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
         });
         // Switch to sign in view
         onViewChange?.("sign_in");
-      } else if (errorMessage.includes("invalid credentials")) {
+      } else if (errorLower.includes("invalid credentials")) {
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
@@ -44,7 +57,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
       } else {
         toast({
           title: "Error",
-          description: error.message || "An error occurred during authentication.",
+          description: errorMessage || "An error occurred during authentication.",
           variant: "destructive",
         });
       }
@@ -53,6 +66,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
     // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth event:", event);
+      console.log("Session:", session);
       
       if (event === "SIGNED_IN") {
         console.log("User signed in successfully:", session?.user.email);
