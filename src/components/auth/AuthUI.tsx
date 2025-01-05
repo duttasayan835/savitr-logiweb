@@ -19,7 +19,13 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
     const handleAuthError = (error: any) => {
       console.error("Auth error details:", error);
       
-      if (error.message.includes("user_already_exists") || error.message.includes("User already registered")) {
+      if (error.message.includes("missing email")) {
+        toast({
+          title: "Missing Email",
+          description: "Please enter your email address.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes("user_already_exists") || error.message.includes("User already registered")) {
         toast({
           title: "Account exists",
           description: "This email is already registered. Please sign in instead.",
