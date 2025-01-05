@@ -23,29 +23,17 @@ export function AuthContainer({ view }: AuthContainerProps) {
         console.log("User signed in successfully:", session?.user.email);
       } else if (event === "USER_UPDATED") {
         console.log("User updated:", session?.user.email);
+      } else if (event === "TOKEN_REFRESH_FAILED") {
+        console.error("Authentication error: Token refresh failed");
+        toast({
+          title: "Authentication error",
+          description: "Your session has expired. Please sign in again.",
+          variant: "destructive",
+        });
       }
     });
 
-    // Handle authentication errors through a separate error listener
-    const handleAuthError = (error: Error) => {
-      console.error("Authentication error:", error.message);
-      toast({
-        title: "Authentication error",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive",
-      });
-    };
-
-    // Listen for authentication errors
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === "USER_DELETED" || event === "TOKEN_REFRESHED") {
-        handleAuthError(new Error("Authentication failed"));
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [toast]);
 
   return (
