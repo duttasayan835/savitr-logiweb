@@ -26,6 +26,11 @@ export function AuthUI({ view }: AuthUIProps) {
       }}
       providers={[]}
       redirectTo={redirectTo}
+      onError={(error) => {
+        console.error("Auth error in UI:", error);
+        const event = new CustomEvent('supabase.auth.error', { detail: error });
+        window.dispatchEvent(event);
+      }}
       localization={{
         variables: {
           sign_up: {

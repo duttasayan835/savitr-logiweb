@@ -9,6 +9,7 @@ export function AuthStateListener() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event);
+      console.log("Session:", session);
       
       if (event === "SIGNED_IN") {
         console.log("User signed in:", session?.user.email);
@@ -60,10 +61,23 @@ export function AuthStateListener() {
       }
     };
 
+    // Create and dispatch a custom event for auth errors
+    const dispatchAuthError = (error: AuthError) => {
+      const event = new CustomEvent('supabase.auth.error', { detail: error });
+      window.dispatchEvent(event);
+    };
+
+    // Add error handler to Supabase auth
+    const { data: { subscription: errorSubscription } } = supabase.auth.onError((error) => {
+      console.error("Supabase auth error:", error);
+      dispatchAuthError(error);
+    });
+
     window.addEventListener('supabase.auth.error', handleAuthError as EventListener);
 
     return () => {
       subscription.unsubscribe();
+      errorSubscription?.unsubscribe();
       window.removeEventListener('supabase.auth.error', handleAuthError as EventListener);
     };
   }, [toast]);
