@@ -33,6 +33,12 @@ export function AuthStateListener() {
           });
         }
       }
+
+      // Handle auth errors from the session
+      const error = (session as any)?.error as AuthError | undefined;
+      if (error) {
+        handleAuthError(error);
+      }
     });
 
     // Create a custom event handler for auth errors
@@ -62,16 +68,8 @@ export function AuthStateListener() {
       }
     };
 
-    // Subscribe to auth state changes and handle errors
-    const authErrorSubscription = supabase.auth.onError((error) => {
-      if (error) {
-        handleAuthError(error);
-      }
-    });
-
     return () => {
       subscription.unsubscribe();
-      authErrorSubscription.unsubscribe();
     };
   }, [toast]);
 
