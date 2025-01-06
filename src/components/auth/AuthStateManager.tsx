@@ -15,12 +15,22 @@ export const useAuthStateManager = () => {
       if (event === "SIGNED_IN") {
         console.log("User signed in successfully:", session?.user.email);
         
-        // Check if user is an admin
-        const { data: adminProfile } = await supabase
+        // Check if user is an admin using maybeSingle() instead of single()
+        const { data: adminProfile, error } = await supabase
           .from('admin_profiles')
           .select('*')
           .eq('user_id', session.user.id)
-          .single();
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking admin status:", error);
+          toast({
+            title: "Error",
+            description: "An error occurred while checking permissions.",
+            variant: "destructive",
+          });
+          return;
+        }
 
         if (adminProfile) {
           console.log("Admin user detected, redirecting to admin dashboard");
