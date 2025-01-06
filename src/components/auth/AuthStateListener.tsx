@@ -16,12 +16,12 @@ export function AuthStateListener() {
         console.log("User signed in:", session?.user.email);
         
         try {
-          // Check if user is an admin
+          // Check if user is an admin using maybeSingle() instead of single()
           const { data: adminProfile, error } = await supabase
             .from('admin_profiles')
             .select('*')
             .eq('user_id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (error) {
             console.error("Error checking admin status:", error);
