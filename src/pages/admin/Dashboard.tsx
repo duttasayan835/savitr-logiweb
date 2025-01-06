@@ -48,17 +48,7 @@ const DashboardPage = () => {
     };
 
     checkAdminStatus();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        navigate("/");
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   if (isLoading) {
     return (
