@@ -3,6 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { AuthError } from "@supabase/supabase-js";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
@@ -15,31 +16,24 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
   console.log("Redirect URL:", redirectTo);
 
   useEffect(() => {
-    // Listen for auth errors
-    const handleAuthError = (error: any) => {
+    const handleAuthError = (error: AuthError) => {
       console.error("Auth error details:", error);
       
       // Parse error message from response body if available
       let errorMessage = error.message;
       try {
-        if (error.body) {
-          const bodyError = JSON.parse(error.body);
-          errorMessage = bodyError.message;
+        if (typeof error.message === 'string') {
+          const bodyError = JSON.parse(error.message);
+          errorMessage = bodyError.message || errorMessage;
         }
       } catch (e) {
-        console.error("Error parsing error body:", e);
+        console.error("Error parsing error message:", e);
       }
       
-      const errorLower = errorMessage.toLowerCase();
-      console.log("Processed error message:", errorLower);
+      const errorCode = error.message.toLowerCase();
+      console.log("Error code:", errorCode);
 
-      if (errorLower.includes("missing email")) {
-        toast({
-          title: "Missing Email",
-          description: "Please enter your email address.",
-          variant: "destructive",
-        });
-      } else if (errorLower.includes("user_already_exists") || errorLower.includes("already registered")) {
+      if (errorCode.includes("user_already_exists") || errorCode.includes("already registered")) {
         console.log("User already exists, switching to sign in view");
         toast({
           title: "Account exists",
@@ -48,10 +42,16 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
         });
         // Switch to sign in view
         onViewChange?.("sign_in");
-      } else if (errorLower.includes("invalid credentials")) {
+      } else if (errorCode.includes("invalid_credentials")) {
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
+          variant: "destructive",
+        });
+      } else if (errorCode.includes("missing email")) {
+        toast({
+          title: "Missing Email",
+          description: "Please enter your email address.",
           variant: "destructive",
         });
       } else {
