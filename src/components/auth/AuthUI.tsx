@@ -20,59 +20,67 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
     const handleAuthError = (error: AuthError) => {
       console.error("Auth error:", error);
       
-      // Extract error details from the response body
+      // Parse error details from the response body
       let errorDetails;
       try {
-        // Handle both string and object error messages
-        if (typeof error.message === 'string') {
-          try {
-            errorDetails = JSON.parse(error.message);
-          } catch {
-            errorDetails = { message: error.message };
-          }
-        } else {
-          errorDetails = error.message;
-        }
+        const errorBody = typeof error.message === 'string' ? error.message : JSON.stringify(error.message);
+        errorDetails = JSON.parse(errorBody);
         console.log("Parsed error details:", errorDetails);
       } catch (e) {
-        console.error("Error parsing error details:", e);
-        errorDetails = { message: error.message };
+        console.error("Error parsing details, using original:", e);
+        errorDetails = { 
+          code: error.message.includes("invalid_credentials") ? "invalid_credentials" : "",
+          message: error.message 
+        };
       }
 
-      // Handle user already exists error
-      if (
-        errorDetails?.code === "user_already_exists" || 
-        errorDetails?.message?.includes("already registered")
-      ) {
-        console.log("User already exists, switching to sign in view");
-        toast({
-          title: "Account exists",
-          description: "This email is already registered. Please sign in instead.",
-          variant: "destructive",
-        });
-        onViewChange?.("sign_in");
-        return;
-      }
+      // Handle specific error cases
+      switch (errorDetails.code) {
+        case "user_already_exists":
+          console.log("User already exists, switching to sign in");
+          toast({
+            title: "Account exists",
+            description: "This email is already registered. Please sign in instead.",
+            variant: "destructive",
+          });
+          onViewChange?.("sign_in");
+          break;
 
-      // Handle invalid credentials error
-      if (
-        errorDetails?.code === "invalid_credentials" || 
-        errorDetails?.message?.includes("invalid login credentials")
-      ) {
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
+        case "invalid_credentials":
+          console.log("Invalid credentials provided");
+          toast({
+            title: "Invalid credentials",
+            description: "Please check your email and password and try again.",
+            variant: "destructive",
+          });
+          break;
 
-      // Default error message
-      toast({
-        title: "Error",
-        description: errorDetails?.message || "An error occurred during authentication.",
-        variant: "destructive",
-      });
+        default:
+          // Check message content for additional error cases
+          if (errorDetails.message.includes("already registered")) {
+            console.log("User already registered (message check)");
+            toast({
+              title: "Account exists",
+              description: "This email is already registered. Please sign in instead.",
+              variant: "destructive",
+            });
+            onViewChange?.("sign_in");
+          } else if (errorDetails.message.includes("invalid login credentials")) {
+            console.log("Invalid login credentials (message check)");
+            toast({
+              title: "Invalid credentials",
+              description: "Please check your email and password and try again.",
+              variant: "destructive",
+            });
+          } else {
+            console.log("Unhandled error:", errorDetails.message);
+            toast({
+              title: "Error",
+              description: errorDetails.message || "An error occurred during authentication.",
+              variant: "destructive",
+            });
+          }
+      }
     };
 
     // Subscribe to auth state changes
