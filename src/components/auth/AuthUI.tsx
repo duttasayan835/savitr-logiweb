@@ -13,42 +13,51 @@ interface AuthUIProps {
 export function AuthUI({ view, onViewChange }: AuthUIProps) {
   const { toast } = useToast();
   const redirectTo = `${window.location.origin}/auth/callback`;
+  console.log("Auth UI initialized with view:", view);
   console.log("Redirect URL:", redirectTo);
 
   useEffect(() => {
     const handleAuthError = (error: AuthError) => {
-      console.error("Auth error details:", error);
+      console.error("Auth error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        status: error.status,
+        name: error.name
+      });
       
       // Parse error message from response body if available
       let errorMessage = error.message;
+      let errorCode = "";
+      
       try {
         if (typeof error.message === 'string') {
           const bodyError = JSON.parse(error.message);
           errorMessage = bodyError.message || errorMessage;
+          errorCode = bodyError.code || "";
         }
       } catch (e) {
         console.error("Error parsing error message:", e);
       }
       
-      const errorCode = error.message.toLowerCase();
-      console.log("Error code:", errorCode);
+      console.log("Parsed error code:", errorCode);
+      console.log("Parsed error message:", errorMessage);
 
-      if (errorCode.includes("user_already_exists") || errorCode.includes("already registered")) {
+      // Handle specific error cases
+      if (errorCode === "user_already_exists" || errorMessage.includes("already registered")) {
         console.log("User already exists, switching to sign in view");
         toast({
           title: "Account exists",
           description: "This email is already registered. Please sign in instead.",
           variant: "destructive",
         });
-        // Switch to sign in view
         onViewChange?.("sign_in");
-      } else if (errorCode.includes("invalid_credentials")) {
+      } else if (errorCode === "invalid_credentials" || errorMessage.includes("Invalid login credentials")) {
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
           variant: "destructive",
         });
-      } else if (errorCode.includes("missing email")) {
+      } else if (errorMessage.includes("missing email")) {
         toast({
           title: "Missing Email",
           description: "Please enter your email address.",
