@@ -19,30 +19,22 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
   useEffect(() => {
     const handleAuthError = (error: AuthError) => {
       console.error("Auth error:", error);
-      console.error("Error details:", {
-        message: error.message,
-        status: error.status,
-        name: error.name
-      });
       
-      // Parse error message from response body if available
       let errorMessage = error.message;
       let errorCode = "";
       
+      // Try to parse the error message if it's a JSON string
       try {
-        if (typeof error.message === 'string') {
-          const bodyError = JSON.parse(error.message);
-          errorMessage = bodyError.message || errorMessage;
-          errorCode = bodyError.code || "";
-        }
+        const parsedError = JSON.parse(error.message);
+        errorMessage = parsedError.message || errorMessage;
+        errorCode = parsedError.code || "";
+        console.log("Parsed error details:", { errorCode, errorMessage });
       } catch (e) {
-        console.error("Error parsing error message:", e);
+        // If parsing fails, use the original message
+        console.log("Using original error message:", errorMessage);
       }
-      
-      console.log("Parsed error code:", errorCode);
-      console.log("Parsed error message:", errorMessage);
 
-      // Handle specific error cases
+      // Handle user already exists error
       if (errorCode === "user_already_exists" || errorMessage.includes("already registered")) {
         console.log("User already exists, switching to sign in view");
         toast({
@@ -51,25 +43,25 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
           variant: "destructive",
         });
         onViewChange?.("sign_in");
-      } else if (errorCode === "invalid_credentials" || errorMessage.includes("Invalid login credentials")) {
+        return;
+      }
+
+      // Handle other common errors
+      if (errorMessage.includes("invalid_credentials")) {
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
           variant: "destructive",
         });
-      } else if (errorMessage.includes("missing email")) {
-        toast({
-          title: "Missing Email",
-          description: "Please enter your email address.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: errorMessage || "An error occurred during authentication.",
-          variant: "destructive",
-        });
+        return;
       }
+
+      // Default error message
+      toast({
+        title: "Error",
+        description: errorMessage || "An error occurred during authentication.",
+        variant: "destructive",
+      });
     };
 
     // Subscribe to auth state changes
