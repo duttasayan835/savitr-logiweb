@@ -20,22 +20,30 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
     const handleAuthError = (error: AuthError) => {
       console.error("Auth error:", error);
       
-      let errorMessage = error.message;
-      let errorCode = "";
-      
-      // Try to parse the error message if it's a JSON string
+      // Extract error details from the response body
+      let errorDetails;
       try {
-        const parsedError = JSON.parse(error.message);
-        errorMessage = parsedError.message || errorMessage;
-        errorCode = parsedError.code || "";
-        console.log("Parsed error details:", { errorCode, errorMessage });
+        // Handle both string and object error messages
+        if (typeof error.message === 'string') {
+          try {
+            errorDetails = JSON.parse(error.message);
+          } catch {
+            errorDetails = { message: error.message };
+          }
+        } else {
+          errorDetails = error.message;
+        }
+        console.log("Parsed error details:", errorDetails);
       } catch (e) {
-        // If parsing fails, use the original message
-        console.log("Using original error message:", errorMessage);
+        console.error("Error parsing error details:", e);
+        errorDetails = { message: error.message };
       }
 
       // Handle user already exists error
-      if (errorCode === "user_already_exists" || errorMessage.includes("already registered")) {
+      if (
+        errorDetails?.code === "user_already_exists" || 
+        errorDetails?.message?.includes("already registered")
+      ) {
         console.log("User already exists, switching to sign in view");
         toast({
           title: "Account exists",
@@ -46,8 +54,11 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
         return;
       }
 
-      // Handle other common errors
-      if (errorMessage.includes("invalid_credentials")) {
+      // Handle invalid credentials error
+      if (
+        errorDetails?.code === "invalid_credentials" || 
+        errorDetails?.message?.includes("invalid login credentials")
+      ) {
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
@@ -59,7 +70,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
       // Default error message
       toast({
         title: "Error",
-        description: errorMessage || "An error occurred during authentication.",
+        description: errorDetails?.message || "An error occurred during authentication.",
         variant: "destructive",
       });
     };
