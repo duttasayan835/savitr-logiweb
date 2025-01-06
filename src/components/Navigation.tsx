@@ -3,11 +3,13 @@ import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard, LogOut } fr
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check current session
@@ -32,7 +34,44 @@ const Navigation = () => {
       navigate("/login");
       return;
     }
-    navigate("/admin");
+
+    try {
+      // Check if user is an admin using maybeSingle() instead of single()
+      const { data: adminProfile, error } = await supabase
+        .from('admin_profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking admin status:", error);
+        toast({
+          title: "Error",
+          description: "An error occurred while checking permissions.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (adminProfile) {
+        console.log("Admin access granted, navigating to admin dashboard");
+        navigate("/admin");
+      } else {
+        console.log("User is not an admin, showing access denied message");
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to access the admin dashboard.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error in admin check:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while checking permissions.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLogout = async () => {
