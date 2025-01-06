@@ -58,7 +58,14 @@ const ParcelUploadForm = () => {
         throw parcelError;
       }
 
-      // Create delivery slot
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("Error getting user:", userError);
+        throw userError;
+      }
+
+      // Create delivery slot with explicit user_id
       const { error: slotError } = await supabase
         .from("delivery_slots")
         .insert({
@@ -67,6 +74,7 @@ const ParcelUploadForm = () => {
           expected_delivery_date: formattedDate,
           expected_time_slot: values.expectedDeliveryTime,
           time_aligned: true,
+          user_id: user?.id // Add explicit user_id
         });
 
       if (slotError) {
