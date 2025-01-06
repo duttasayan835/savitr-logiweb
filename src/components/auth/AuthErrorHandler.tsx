@@ -44,6 +44,15 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
         });
         break;
 
+      case "42P17":
+        console.log("Database policy error");
+        toast({
+          title: "System Error",
+          description: "An error occurred while checking permissions. Please try again later.",
+          variant: "destructive",
+        });
+        break;
+
       default:
         if (errorDetails.message.includes("already registered")) {
           console.log("User already registered (message check)");

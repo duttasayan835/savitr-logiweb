@@ -15,27 +15,48 @@ export function AuthStateListener() {
       if (event === "SIGNED_IN") {
         console.log("User signed in:", session?.user.email);
         
-        // Check if user is an admin
-        const { data: adminProfile, error } = await supabase
-          .from('admin_profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
+        try {
+          // Check if user is an admin
+          const { data: adminProfile, error } = await supabase
+            .from('admin_profiles')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single();
 
-        if (adminProfile) {
-          console.log("Admin user detected, redirecting to admin dashboard");
+          if (error) {
+            console.error("Error checking admin status:", error);
+            if (error.code === '42P17') {
+              toast({
+                title: "System Error",
+                description: "An error occurred while checking permissions. Please try again later.",
+                variant: "destructive",
+              });
+              return;
+            }
+          }
+
+          if (adminProfile) {
+            console.log("Admin user detected, redirecting to admin dashboard");
+            toast({
+              title: "Welcome back, Admin!",
+              description: "You have successfully signed in.",
+            });
+            navigate("/admin");
+          } else {
+            console.log("Regular user detected");
+            toast({
+              title: "Welcome back!",
+              description: "You have successfully signed in.",
+            });
+            navigate("/");
+          }
+        } catch (error) {
+          console.error("Error in auth state change:", error);
           toast({
-            title: "Welcome back, Admin!",
-            description: "You have successfully signed in.",
+            title: "Error",
+            description: "An error occurred while processing your login.",
+            variant: "destructive",
           });
-          navigate("/admin");
-        } else {
-          console.log("Regular user detected");
-          toast({
-            title: "Welcome back!",
-            description: "You have successfully signed in.",
-          });
-          navigate("/");
         }
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
