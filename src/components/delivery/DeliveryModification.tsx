@@ -57,11 +57,20 @@ export function DeliveryModification({
       return;
     }
 
+    if (!selectedDate) {
+      toast({
+        title: "Invalid date",
+        description: "Please select a valid delivery date",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("delivery_slots")
         .update({
-          selected_date: selectedDate,
+          selected_date: selectedDate.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string
           selected_time_slot: selectedTimeSlot,
           status: "modified",
         })
