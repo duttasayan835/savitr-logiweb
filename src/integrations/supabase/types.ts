@@ -69,6 +69,71 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_charges: {
+        Row: {
+          amount: number
+          created_at: string | null
+          delivery_slot_id: string | null
+          id: string
+          reason: string | null
+          status: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          delivery_slot_id?: string | null
+          id?: string
+          reason?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          delivery_slot_id?: string | null
+          id?: string
+          reason?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_charges_delivery_slot_id_fkey"
+            columns: ["delivery_slot_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          preferred_time_slot:
+            | Database["public"]["Enums"]["delivery_time_slot"]
+            | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          preferred_time_slot?:
+            | Database["public"]["Enums"]["delivery_time_slot"]
+            | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          preferred_time_slot?:
+            | Database["public"]["Enums"]["delivery_time_slot"]
+            | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       delivery_routes: {
         Row: {
           completed_deliveries: number
@@ -144,6 +209,51 @@ export type Database = {
         }
         Relationships: []
       }
+      parcels: {
+        Row: {
+          consignment_no: string
+          created_at: string | null
+          expected_delivery_date: string
+          expected_delivery_time: string
+          id: string
+          parcel_type: string
+          preferred_delivery_time: string | null
+          recipient_email: string
+          recipient_name: string
+          recipient_phone: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          consignment_no: string
+          created_at?: string | null
+          expected_delivery_date: string
+          expected_delivery_time: string
+          id?: string
+          parcel_type: string
+          preferred_delivery_time?: string | null
+          recipient_email: string
+          recipient_name: string
+          recipient_phone: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          consignment_no?: string
+          created_at?: string | null
+          expected_delivery_date?: string
+          expected_delivery_time?: string
+          id?: string
+          parcel_type?: string
+          preferred_delivery_time?: string | null
+          recipient_email?: string
+          recipient_name?: string
+          recipient_phone?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -185,10 +295,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_delivery_charges: {
+        Args: {
+          selected_time_slot: Database["public"]["Enums"]["delivery_time_slot"]
+        }
+        Returns: number
+      }
     }
     Enums: {
       admin_role: "admin" | "super_admin"
+      delivery_time_slot:
+        | "morning_early"
+        | "morning"
+        | "afternoon"
+        | "evening"
+        | "evening_late"
       user_type: "admin" | "recipient"
     }
     CompositeTypes: {

@@ -26,6 +26,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+    { icon: Package, label: "Parcel Management", path: "/admin/parcels" },
     { icon: Clock, label: "Delivery Slot Management", path: "/admin/slots" },
     { icon: Package, label: "Consignment Tracker", path: "/admin/tracker" },
     { icon: FileText, label: "Generate POD Sheets", path: "/admin/pod" },

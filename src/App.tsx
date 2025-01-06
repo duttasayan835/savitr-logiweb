@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import DashboardPage from "./pages/admin/Dashboard";
 import LoginPage from "./pages/auth/Login";
+import ParcelManagementPage from "./pages/admin/ParcelManagement";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin" element={<DashboardPage />} />
+          <Route path="/admin/parcels" element={<ParcelManagementPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>
       </Router>
