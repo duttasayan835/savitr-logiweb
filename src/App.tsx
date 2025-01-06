@@ -4,6 +4,7 @@ import Index from "./pages/Index";
 import DashboardPage from "./pages/admin/Dashboard";
 import LoginPage from "./pages/auth/Login";
 import ParcelManagementPage from "./pages/admin/ParcelManagement";
+import ModifySchedulePage from "./pages/delivery/ModifySchedule";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/admin" element={<DashboardPage />} />
           <Route path="/admin/parcels" element={<ParcelManagementPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/delivery/modify" element={<ModifySchedulePage />} />
         </Routes>
       </Router>
     </ThemeProvider>
