@@ -44,6 +44,8 @@ export function AuthStateListener() {
           description: "You have been signed out successfully.",
         });
         navigate("/");
+      } else if (event === "USER_UPDATED") {
+        console.log("User profile updated");
       }
     });
 
