@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const parcelFormSchema = z.object({
-  consignmentNo: z.string().min(1, "Consignment number is required"),
   parcelType: z.string().min(1, "Parcel type is required"),
   recipientName: z.string().min(1, "Recipient name is required"),
   recipientPhone: z.string().min(10, "Valid phone number is required"),

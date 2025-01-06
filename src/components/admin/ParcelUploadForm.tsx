@@ -9,12 +9,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { ParcelFormFields } from "./ParcelFormFields";
 import { parcelFormSchema, type ParcelFormValues } from "./types";
 
+const generateConsignmentNo = () => {
+  const timestamp = new Date().getTime().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+  return `PCL-${timestamp}-${randomStr}`;
+};
+
 const ParcelUploadForm = () => {
   const { toast } = useToast();
   const form = useForm<ParcelFormValues>({
     resolver: zodResolver(parcelFormSchema),
     defaultValues: {
-      consignmentNo: "",
       parcelType: "",
       recipientName: "",
       recipientPhone: "",
@@ -27,6 +32,9 @@ const ParcelUploadForm = () => {
     try {
       console.log("Submitting parcel data:", values);
       
+      // Generate a unique consignment number
+      const consignmentNo = generateConsignmentNo();
+      
       // Format the date for Supabase
       const formattedDate = format(values.expectedDeliveryDate, "yyyy-MM-dd");
       
@@ -34,7 +42,7 @@ const ParcelUploadForm = () => {
       const { data: parcel, error: parcelError } = await supabase
         .from("parcels")
         .insert({
-          consignment_no: values.consignmentNo,
+          consignment_no: consignmentNo,
           parcel_type: values.parcelType,
           recipient_name: values.recipientName,
           recipient_phone: values.recipientPhone,
@@ -54,7 +62,7 @@ const ParcelUploadForm = () => {
       const { error: slotError } = await supabase
         .from("delivery_slots")
         .insert({
-          consignment_no: values.consignmentNo,
+          consignment_no: consignmentNo,
           type_of_consignment: values.parcelType,
           expected_delivery_date: formattedDate,
           expected_time_slot: values.expectedDeliveryTime,
@@ -73,7 +81,7 @@ const ParcelUploadForm = () => {
           body: {
             recipientEmail: values.recipientEmail,
             recipientPhone: values.recipientPhone,
-            consignmentNo: values.consignmentNo,
+            consignmentNo: consignmentNo,
             expectedDeliveryDate: format(values.expectedDeliveryDate, "PPP"),
             expectedDeliveryTime: values.expectedDeliveryTime,
           },
@@ -87,7 +95,7 @@ const ParcelUploadForm = () => {
 
       toast({
         title: "Success",
-        description: "Parcel details uploaded and notification sent.",
+        description: `Parcel details uploaded with consignment number: ${consignmentNo}`,
       });
 
       form.reset();

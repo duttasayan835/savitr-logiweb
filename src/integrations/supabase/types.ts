@@ -301,6 +301,12 @@ export type Database = {
         }
         Returns: number
       }
+      is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       admin_role: "admin" | "super_admin"
