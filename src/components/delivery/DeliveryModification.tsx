@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Clock, Calendar as CalendarIcon, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { TimeSlotSelector } from "./TimeSlotSelector";
+import { DateSelector } from "./DateSelector";
+import { CustomTimeInput } from "./CustomTimeInput";
 
 interface DeliveryModificationProps {
   consignmentNo: string;
@@ -21,25 +20,11 @@ export function DeliveryModification({
   currentTimeSlot,
 }: DeliveryModificationProps) {
   const { toast } = useToast();
-  const [acceptDefault, setAcceptDefault] = useState<boolean>(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(currentDate);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(currentTimeSlot);
+  const [customTime, setCustomTime] = useState("16:30"); // 4:30 PM default
   const [additionalCharges, setAdditionalCharges] = useState(0);
-
-  // Calculate if we're within the 12-hour modification window
-  const canModify = () => {
-    const now = new Date();
-    const deliveryDate = new Date(currentDate);
-    const hoursDifference = (deliveryDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-    return hoursDifference >= 12;
-  };
-
-  // Calculate additional charges based on time slot
-  const calculateCharges = (timeSlot: string) => {
-    if (timeSlot === "morning_early") return 20;
-    if (timeSlot === "evening_late") return 20;
-    return 0;
-  };
+  const [timeAligned, setTimeAligned] = useState(false);
 
   const handleTimeSlotChange = (value: string) => {
     setSelectedTimeSlot(value);
@@ -47,31 +32,23 @@ export function DeliveryModification({
     setAdditionalCharges(charges);
   };
 
+  const calculateCharges = (timeSlot: string) => {
+    if (timeSlot === "custom") {
+      // Calculate charges based on custom time selection
+      return 2; // Base charge for custom slot
+    }
+    return 0;
+  };
+
   const handleSubmit = async () => {
-    if (!canModify()) {
-      toast({
-        title: "Modification window closed",
-        description: "Changes can only be made 12 hours before delivery",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedDate) {
-      toast({
-        title: "Invalid date",
-        description: "Please select a valid delivery date",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const { error } = await supabase
         .from("delivery_slots")
         .update({
-          selected_date: selectedDate.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD string
+          selected_date: selectedDate?.toISOString().split('T')[0],
           selected_time_slot: selectedTimeSlot,
+          custom_time: selectedTimeSlot === "custom" ? customTime : null,
+          time_aligned: timeAligned,
           status: "modified",
         })
         .eq("consignment_no", consignmentNo);
@@ -84,7 +61,7 @@ export function DeliveryModification({
           .insert({
             delivery_slot_id: consignmentNo,
             amount: additionalCharges,
-            reason: "Special time slot selection",
+            reason: "Custom time slot selection",
           });
 
         if (chargeError) throw chargeError;
@@ -105,107 +82,72 @@ export function DeliveryModification({
   };
 
   return (
-    <Card className="p-6 space-y-6">
+    <Card className="p-6 space-y-6 max-w-2xl mx-auto">
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Modify Delivery Schedule</h2>
-        <p className="text-muted-foreground">
-          Consignment: {consignmentNo}
-        </p>
-
-        <div className="space-y-4">
-          <RadioGroup
-            defaultValue={acceptDefault ? "yes" : "no"}
-            onValueChange={(value) => setAcceptDefault(value === "yes")}
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="yes" id="accept-default" />
-              <Label htmlFor="accept-default">Accept default schedule</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="no" id="modify-schedule" />
-              <Label htmlFor="modify-schedule">Modify schedule</Label>
-            </div>
-          </RadioGroup>
-
-          {!acceptDefault && (
-            <div className="space-y-4">
-              <div>
-                <Label>Select New Date</Label>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  disabled={(date) => {
-                    const now = new Date();
-                    return date < now;
-                  }}
-                  className="rounded-md border"
-                />
-              </div>
-
-              <div>
-                <Label>Select Time Slot</Label>
-                <RadioGroup
-                  value={selectedTimeSlot}
-                  onValueChange={handleTimeSlotChange}
-                  className="grid grid-cols-1 gap-2 mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="morning_early" id="morning-early" />
-                    <Label htmlFor="morning-early" className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Early Morning (6:00 AM - 10:00 AM)
-                      <span className="text-sm text-muted-foreground">(₹20 additional charge)</span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="morning" id="morning" />
-                    <Label htmlFor="morning" className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Morning (10:00 AM - 2:00 PM)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="afternoon" id="afternoon" />
-                    <Label htmlFor="afternoon" className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Afternoon (2:00 PM - 6:00 PM)
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="evening_late" id="evening-late" />
-                    <Label htmlFor="evening-late" className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
-                      Late Evening (6:00 PM - 10:00 PM)
-                      <span className="text-sm text-muted-foreground">(₹20 additional charge)</span>
-                    </Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              {additionalCharges > 0 && (
-                <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Additional charges of ₹{additionalCharges} will apply</span>
-                </div>
-              )}
-            </div>
-          )}
+        <h2 className="text-2xl font-semibold">Dynamic Time Slot Management System</h2>
+        <div className="text-sm text-muted-foreground">
+          <p>Consignment No: {consignmentNo}</p>
+          <p>Type of Consignment: Letter / Document</p>
         </div>
 
-        <Button
-          onClick={handleSubmit}
-          className="w-full"
-          disabled={!canModify()}
-        >
-          Save Preferences
-        </Button>
+        <div className="space-y-2">
+          <p className="font-medium">Does the allotted time align with your schedule?</p>
+          <div className="flex space-x-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                checked={timeAligned}
+                onChange={() => setTimeAligned(true)}
+                className="radio"
+              />
+              <span>Yes</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                checked={!timeAligned}
+                onChange={() => setTimeAligned(false)}
+                className="radio"
+              />
+              <span>No</span>
+            </label>
+          </div>
+        </div>
 
-        {!canModify() && (
-          <p className="text-sm text-destructive flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            Modification window has closed (changes must be made 12 hours before delivery)
-          </p>
+        {!timeAligned && (
+          <>
+            <DateSelector
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+              currentDate={currentDate}
+            />
+
+            <TimeSlotSelector
+              selectedTimeSlot={selectedTimeSlot}
+              onTimeSlotChange={handleTimeSlotChange}
+              additionalCharges={additionalCharges}
+            />
+
+            <CustomTimeInput
+              value={customTime}
+              onChange={setCustomTime}
+              visible={selectedTimeSlot === "custom"}
+            />
+
+            {additionalCharges > 0 && (
+              <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-500">
+                <AlertCircle className="h-4 w-4" />
+                <span>Additional charges of ₹{additionalCharges} will apply</span>
+              </div>
+            )}
+
+            <Button
+              onClick={handleSubmit}
+              className="w-full bg-red-600 hover:bg-red-700"
+            >
+              Confirm
+            </Button>
+          </>
         )}
       </div>
     </Card>
