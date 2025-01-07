@@ -20,12 +20,35 @@ const Navigation = () => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
       setUser(session?.user ?? null);
+
+      if (event === 'SIGNED_IN') {
+        try {
+          const { data: adminProfile, error: adminError } = await supabase
+            .from('admin_profiles')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (adminError) {
+            console.error("Error checking admin status:", adminError);
+            return;
+          }
+
+          if (adminProfile) {
+            console.log("Admin user detected, redirecting to admin/parcels");
+            navigate("/admin/parcels");
+          }
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleAdminClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,7 +59,6 @@ const Navigation = () => {
     }
 
     try {
-      // Check if user is an admin using maybeSingle() instead of single()
       const { data: adminProfile, error } = await supabase
         .from('admin_profiles')
         .select('*')
@@ -54,8 +76,8 @@ const Navigation = () => {
       }
 
       if (adminProfile) {
-        console.log("Admin access granted, navigating to admin dashboard");
-        navigate("/admin");
+        console.log("Admin access granted, navigating to admin/parcels");
+        navigate("/admin/parcels");
       } else {
         console.log("User is not an admin, showing access denied message");
         toast({
@@ -75,8 +97,21 @@ const Navigation = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred while signing out.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLoginClick = () => {
