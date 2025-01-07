@@ -36,6 +36,20 @@ export const ParcelFormFields: React.FC<ParcelFormFieldsProps> = ({ form }) => {
     <>
       <FormField
         control={form.control}
+        name="consignmentNo"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Consignment Number *</FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter consignment number" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
         name="parcelType"
         render={({ field }) => (
           <FormItem>

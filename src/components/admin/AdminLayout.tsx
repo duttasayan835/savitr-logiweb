@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [notifications, setNotifications] = useState([
+  const [notifications] = useState([
     "Delivery for Sayan Dutta has been rescheduled",
     "Delivery for Ashik Ghorai has been updated"
   ]);
@@ -37,6 +37,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const handleMenuClick = (path: string) => {
+    console.log("Navigating to:", path);
+    navigate(path);
   };
 
   return (
@@ -89,7 +94,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                   <Button
                     variant="ghost"
                     className="w-full justify-start"
-                    onClick={() => navigate(item.path)}
+                    onClick={() => handleMenuClick(item.path)}
                   >
                     <item.icon className="mr-2 h-4 w-4" />
                     {item.label}

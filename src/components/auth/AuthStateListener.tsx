@@ -16,7 +16,6 @@ export function AuthStateListener() {
         console.log("User signed in:", session?.user.email);
         
         try {
-          // Check if user is an admin using maybeSingle() instead of single()
           const { data: adminProfile, error } = await supabase
             .from('admin_profiles')
             .select('*')
@@ -36,12 +35,12 @@ export function AuthStateListener() {
           }
 
           if (adminProfile) {
-            console.log("Admin user detected, redirecting to admin dashboard");
+            console.log("Admin user detected, redirecting to admin/parcels");
             toast({
               title: "Welcome back, Admin!",
               description: "You have successfully signed in.",
             });
-            navigate("/admin");
+            navigate("/admin/parcels");
           } else {
             console.log("Regular user detected");
             toast({
@@ -65,8 +64,6 @@ export function AuthStateListener() {
           description: "You have been signed out successfully.",
         });
         navigate("/");
-      } else if (event === "USER_UPDATED") {
-        console.log("User profile updated");
       }
     });
 
