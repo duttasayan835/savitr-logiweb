@@ -6,6 +6,7 @@ import { AuthTabs } from "./AuthTabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthChangeEvent } from "@supabase/supabase-js";
 
 export function Auth() {
   const [isOpen, setIsOpen] = useState(true);
@@ -14,18 +15,18 @@ export function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'USER_DELETED') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
+      if (event === "USER_DELETED") {
         toast({
           title: "Account deleted",
           description: "Your account has been successfully deleted.",
         });
-      } else if (event === 'PASSWORD_RECOVERY') {
+      } else if (event === "PASSWORD_RECOVERY") {
         toast({
           title: "Password recovery",
           description: "Check your email for password reset instructions.",
         });
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === "SIGNED_OUT") {
         toast({
           title: "Signed out",
           description: "You have been successfully signed out.",
