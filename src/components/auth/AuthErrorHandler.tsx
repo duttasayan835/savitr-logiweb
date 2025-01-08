@@ -13,7 +13,13 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
     
     let errorDetails;
     try {
-      const errorBody = typeof error.message === 'string' ? error.message : JSON.stringify(error.message);
+      // Parse error details from the response body
+      const errorBody = error.message.includes('{') ? 
+        error.message : 
+        typeof error.message === 'string' ? 
+          error.message : 
+          JSON.stringify(error.message);
+      
       errorDetails = JSON.parse(errorBody);
       console.log("Parsed error details:", errorDetails);
     } catch (e) {
@@ -40,15 +46,6 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
         toast({
           title: "Invalid credentials",
           description: "Please check your email and password and try again.",
-          variant: "destructive",
-        });
-        break;
-
-      case "42P17":
-        console.log("Database policy error");
-        toast({
-          title: "System Error",
-          description: "An error occurred while checking permissions. Please try again later.",
           variant: "destructive",
         });
         break;
