@@ -6,12 +6,14 @@ import ParcelManagementPage from "@/pages/admin/ParcelManagement";
 import SlotManagement from "@/pages/admin/SlotManagement";
 import ConsignmentTracker from "@/pages/admin/ConsignmentTracker";
 import GeneratePOD from "@/pages/admin/GeneratePOD";
+import HomePage from "@/pages/Index";
 
 const App = () => {
   return (
     <Router>
       <Navigation />
       <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route path="/admin" element={<DashboardPage />} />
         <Route path="/admin/parcels" element={<ParcelManagementPage />} />
         <Route path="/admin/slots" element={<SlotManagement />} />
