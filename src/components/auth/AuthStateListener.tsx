@@ -24,14 +24,12 @@ export function AuthStateListener() {
 
           if (error) {
             console.error("Error checking admin status:", error);
-            if (error.code === '42P17') {
-              toast({
-                title: "System Error",
-                description: "An error occurred while checking permissions. Please try again later.",
-                variant: "destructive",
-              });
-              return;
-            }
+            toast({
+              title: "Error",
+              description: "An error occurred while checking permissions.",
+              variant: "destructive",
+            });
+            return;
           }
 
           if (adminProfile) {

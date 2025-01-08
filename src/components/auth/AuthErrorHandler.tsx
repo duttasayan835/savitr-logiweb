@@ -13,12 +13,10 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
     
     let errorDetails;
     try {
-      // Parse error details from the response body
+      // First try to parse the error message if it contains JSON
       const errorBody = error.message.includes('{') ? 
-        error.message : 
-        typeof error.message === 'string' ? 
-          error.message : 
-          JSON.stringify(error.message);
+        error.message.substring(error.message.indexOf('{')) : 
+        error.message;
       
       errorDetails = JSON.parse(errorBody);
       console.log("Parsed error details:", errorDetails);
