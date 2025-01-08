@@ -7,6 +7,7 @@ import SlotManagement from "@/pages/admin/SlotManagement";
 import ConsignmentTracker from "@/pages/admin/ConsignmentTracker";
 import GeneratePOD from "@/pages/admin/GeneratePOD";
 import HomePage from "@/pages/Index";
+import LoginPage from "@/pages/auth/Login";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
       <Navigation />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<DashboardPage />} />
         <Route path="/admin/parcels" element={<ParcelManagementPage />} />
         <Route path="/admin/slots" element={<SlotManagement />} />

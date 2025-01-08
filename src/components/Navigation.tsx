@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -9,6 +9,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -47,6 +48,18 @@ const Navigation = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleHashLinkClick = (hash: string) => {
+    if (location.pathname !== '/') {
+      navigate('/' + hash);
+    } else {
+      const element = document.querySelector(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    setIsOpen(false);
+  };
 
   const handleAdminClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -112,14 +125,15 @@ const Navigation = () => {
 
   const handleLoginClick = () => {
     navigate("/login");
+    setIsOpen(false);
   };
 
   const menuItems = [
-    { name: "Track Package", icon: Package, href: "#track" },
-    { name: "Find Branch", icon: MapPin, href: "#branches" },
-    { name: "Services", icon: FileText, href: "#services" },
-    { name: "Contact", icon: Phone, href: "#contact" },
-    { name: "Admin", icon: LayoutDashboard, href: "/admin", onClick: handleAdminClick },
+    { name: "Track Package", icon: Package, hash: "#track" },
+    { name: "Find Branch", icon: MapPin, hash: "#branches" },
+    { name: "Services", icon: FileText, hash: "#services" },
+    { name: "Contact", icon: Phone, hash: "#contact" },
+    { name: "Admin", icon: LayoutDashboard, onClick: handleAdminClick },
   ];
 
   return (
@@ -134,25 +148,24 @@ const Navigation = () => {
 
           <div className="hidden md:flex items-center space-x-8">
             {menuItems.map((item) => (
-              item.href.startsWith('#') ? (
-                <a
+              item.hash ? (
+                <button
                   key={item.name}
-                  href={item.href}
+                  onClick={() => handleHashLinkClick(item.hash)}
                   className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.name}</span>
-                </a>
+                </button>
               ) : (
-                <Link
+                <button
                   key={item.name}
-                  to={item.href}
                   onClick={item.onClick}
                   className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.name}</span>
-                </Link>
+                </button>
               )
             ))}
             {user ? (
@@ -188,30 +201,29 @@ const Navigation = () => {
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {menuItems.map((item) => (
-                item.href.startsWith('#') ? (
-                  <a
+                item.hash ? (
+                  <button
                     key={item.name}
-                    href={item.href}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => handleHashLinkClick(item.hash)}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium w-full text-left"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.name}</span>
-                  </a>
+                  </button>
                 ) : (
-                  <Link
+                  <button
                     key={item.name}
-                    to={item.href}
                     onClick={(e) => {
                       if (item.onClick) {
                         item.onClick(e);
                       }
                       setIsOpen(false);
                     }}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
+                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium w-full text-left"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.name}</span>
-                  </Link>
+                  </button>
                 )
               ))}
               {user ? (
