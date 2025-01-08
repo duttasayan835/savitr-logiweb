@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,12 +12,10 @@ const Navigation = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -76,10 +74,8 @@ const Navigation = () => {
       }
 
       if (adminProfile) {
-        console.log("Admin access granted, navigating to admin/parcels");
         navigate("/admin/parcels");
       } else {
-        console.log("User is not an admin, showing access denied message");
         toast({
           title: "Access Denied",
           description: "You don't have permission to access the admin dashboard.",
@@ -130,25 +126,34 @@ const Navigation = () => {
     <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
+          <Link to="/" className="flex-shrink-0 flex items-center">
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Savitr-AI
             </span>
-          </div>
+          </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             {menuItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                onClick={item.onClick}
-                className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.name}</span>
-              </a>
+              item.href.startsWith('#') ? (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </a>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={item.onClick}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.name}</span>
+                </Link>
+              )
             ))}
             {user ? (
               <Button 
@@ -169,7 +174,6 @@ const Navigation = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -180,25 +184,35 @@ const Navigation = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {menuItems.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    if (item.onClick) {
-                      item.onClick(e);
-                    }
-                    setIsOpen(false);
-                  }}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.name}</span>
-                </a>
+                item.href.startsWith('#') ? (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.name}</span>
+                  </a>
+                ) : (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={(e) => {
+                      if (item.onClick) {
+                        item.onClick(e);
+                      }
+                      setIsOpen(false);
+                    }}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.name}</span>
+                  </Link>
+                )
               ))}
               {user ? (
                 <Button 
