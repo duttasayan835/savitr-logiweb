@@ -13,7 +13,7 @@ export function CustomTimeInput({ value, onChange, visible }: CustomTimeInputPro
   return (
     <div className="space-y-2">
       <Label htmlFor="custom-time" className="text-base font-semibold">
-        Customize Time Slot (₹2 per 30 minutes after scheduled delivery time)
+        Customize Time Slot (₹5 for slots before 10:00 AM or after 6:00 PM)
       </Label>
       <Input
         id="custom-time"

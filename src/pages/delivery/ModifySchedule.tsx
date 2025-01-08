@@ -11,6 +11,7 @@ export default function ModifySchedulePage() {
     consignmentNo: string;
     currentDate: Date;
     currentTimeSlot: string;
+    typeOfConsignment: string;
   } | null>(null);
 
   const consignmentNo = searchParams.get("consignment");
@@ -31,7 +32,7 @@ export default function ModifySchedulePage() {
           .from("delivery_slots")
           .select("*")
           .eq("consignment_no", consignmentNo)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -40,6 +41,7 @@ export default function ModifySchedulePage() {
             consignmentNo: data.consignment_no,
             currentDate: new Date(data.expected_delivery_date),
             currentTimeSlot: data.expected_time_slot,
+            typeOfConsignment: data.type_of_consignment,
           });
         }
       } catch (error) {

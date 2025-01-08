@@ -8,6 +8,7 @@ import ConsignmentTracker from "@/pages/admin/ConsignmentTracker";
 import GeneratePOD from "@/pages/admin/GeneratePOD";
 import HomePage from "@/pages/Index";
 import LoginPage from "@/pages/auth/Login";
+import ModifySchedulePage from "@/pages/delivery/ModifySchedule";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/admin/slots" element={<SlotManagement />} />
         <Route path="/admin/tracker" element={<ConsignmentTracker />} />
         <Route path="/admin/pod" element={<GeneratePOD />} />
+        <Route path="/delivery/modify" element={<ModifySchedulePage />} />
       </Routes>
     </Router>
   );

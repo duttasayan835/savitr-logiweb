@@ -12,12 +12,14 @@ interface DeliveryModificationProps {
   consignmentNo: string;
   currentDate: Date;
   currentTimeSlot: string;
+  typeOfConsignment: string;
 }
 
 export function DeliveryModification({
   consignmentNo,
   currentDate,
   currentTimeSlot,
+  typeOfConsignment,
 }: DeliveryModificationProps) {
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(currentDate);
@@ -34,8 +36,11 @@ export function DeliveryModification({
 
   const calculateCharges = (timeSlot: string) => {
     if (timeSlot === "custom") {
-      // Calculate charges based on custom time selection
-      return 2; // Base charge for custom slot
+      const time = customTime.split(":");
+      const hour = parseInt(time[0]);
+      if (hour < 10 || hour >= 18) {
+        return 5; // ₹5 for slots before 10 AM or after 6 PM
+      }
     }
     return 0;
   };
@@ -84,10 +89,15 @@ export function DeliveryModification({
   return (
     <Card className="p-6 space-y-6 max-w-2xl mx-auto">
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Dynamic Time Slot Management System</h2>
-        <div className="text-sm text-muted-foreground">
+        <div className="flex items-center justify-between">
+          <img src="/lovable-uploads/8a28cf14-d9ce-4238-9030-24fdfccf76f7.png" alt="India Post Logo" className="h-12" />
+          <h1 className="text-2xl font-bold text-red-600">Savitr-AI</h1>
+        </div>
+        
+        <h2 className="text-xl font-semibold">Dynamic Time Slot Management System</h2>
+        <div className="text-sm text-muted-foreground space-y-2">
           <p>Consignment No: {consignmentNo}</p>
-          <p>Type of Consignment: Letter / Document</p>
+          <p>Type of Consignment: {typeOfConsignment}</p>
         </div>
 
         <div className="space-y-2">
