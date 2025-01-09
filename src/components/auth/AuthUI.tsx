@@ -41,7 +41,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
             password_label: "Password",
             email_input_placeholder: "Your email address",
             password_input_placeholder: "Choose a strong password",
-            link_text: "Already have an account? Sign in",
+            link_text: "Don't have an account? Sign up",
           },
           sign_in: {
             button_label: "Sign in",
@@ -49,7 +49,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
             password_label: "Password",
             email_input_placeholder: "Your email address",
             password_input_placeholder: "Your password",
-            link_text: "Don't have an account? Sign up",
+            link_text: "Already have an account? Sign in",
           }
         }
       }}
