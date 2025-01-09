@@ -25,15 +25,14 @@ export default function ModifySchedulePage() {
       }
 
       try {
-        // For testing purposes, using a default consignment number
-        const testConsignmentNo = "TEST123"; // You can replace this with actual consignment number
+        const testConsignmentNo = "TEST123";
         console.log("Fetching delivery data for consignment:", testConsignmentNo);
         
         const { data, error } = await supabase
           .from("delivery_slots")
           .select("*")
           .eq("consignment_no", testConsignmentNo)
-          .single();
+          .maybeSingle(); // Changed from single() to maybeSingle()
 
         if (error) {
           console.error("Error fetching delivery data:", error);
@@ -52,7 +51,7 @@ export default function ModifySchedulePage() {
           console.log("No delivery data found");
           toast({
             title: "Not Found",
-            description: "Delivery information not found",
+            description: "No delivery information found for this consignment number. Please contact support.",
             variant: "destructive",
           });
         }
@@ -60,7 +59,7 @@ export default function ModifySchedulePage() {
         console.error("Error in checkAuthAndFetchData:", error);
         toast({
           title: "Error",
-          description: "Failed to load delivery information",
+          description: "Failed to load delivery information. Please try again later.",
           variant: "destructive",
         });
       }
