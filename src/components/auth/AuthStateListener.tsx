@@ -34,7 +34,8 @@ export function AuthStateListener() {
               description: "You have been signed in successfully.",
             });
           } else {
-            navigate("/");
+            // For regular users, redirect to delivery modification page
+            navigate("/delivery/modify");
             toast({
               title: "Welcome",
               description: "You have been signed in successfully.",

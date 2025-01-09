@@ -11,6 +11,7 @@ import LoginPage from "@/pages/auth/Login";
 import ModifySchedulePage from "@/pages/delivery/ModifySchedule";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthStateListener } from "@/components/auth/AuthStateListener";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -39,13 +40,20 @@ const App = () => {
 
   return (
     <Router>
+      <AuthStateListener />
       <Navigation />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/delivery/modify" />} />
         <Route 
           path="/delivery/modify" 
-          element={user ? <ModifySchedulePage /> : <Navigate to="/login" />} 
+          element={
+            user ? (
+              <ModifySchedulePage />
+            ) : (
+              <Navigate to="/login" state={{ from: "/delivery/modify" }} />
+            )
+          } 
         />
         <Route path="/admin" element={<DashboardPage />} />
         <Route path="/admin/parcels" element={<ParcelManagementPage />} />

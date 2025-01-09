@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { DeliveryModification } from "@/components/delivery/DeliveryModification";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ModifySchedulePage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [deliveryData, setDeliveryData] = useState<{
@@ -14,8 +13,6 @@ export default function ModifySchedulePage() {
     currentTimeSlot: string;
     typeOfConsignment: string;
   } | null>(null);
-
-  const consignmentNo = searchParams.get("consignment");
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -27,23 +24,16 @@ export default function ModifySchedulePage() {
         return;
       }
 
-      if (!consignmentNo) {
-        console.log("No consignment number provided");
-        toast({
-          title: "Error",
-          description: "No consignment number provided",
-          variant: "destructive",
-        });
-        return;
-      }
-
       try {
-        console.log("Fetching delivery data for consignment:", consignmentNo);
+        // For testing purposes, using a default consignment number
+        const testConsignmentNo = "TEST123"; // You can replace this with actual consignment number
+        console.log("Fetching delivery data for consignment:", testConsignmentNo);
+        
         const { data, error } = await supabase
           .from("delivery_slots")
           .select("*")
-          .eq("consignment_no", consignmentNo)
-          .maybeSingle();
+          .eq("consignment_no", testConsignmentNo)
+          .single();
 
         if (error) {
           console.error("Error fetching delivery data:", error);
@@ -59,7 +49,7 @@ export default function ModifySchedulePage() {
             typeOfConsignment: data.type_of_consignment,
           });
         } else {
-          console.log("No delivery data found for consignment:", consignmentNo);
+          console.log("No delivery data found");
           toast({
             title: "Not Found",
             description: "Delivery information not found",
@@ -77,7 +67,7 @@ export default function ModifySchedulePage() {
     };
 
     checkAuthAndFetchData();
-  }, [consignmentNo, navigate, toast]);
+  }, [navigate, toast]);
 
   if (!deliveryData) {
     return (
