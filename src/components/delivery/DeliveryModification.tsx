@@ -112,7 +112,7 @@ export function DeliveryModification({
         </div>
 
         <div className="text-sm text-gray-600 border-b pb-2">
-          You Are Here: Home >> Savitr-AI
+          You Are Here: Home {'>'}{'>'} Savitr-AI
         </div>
         
         <h2 className="text-xl font-semibold">Dynamic Time Slot Management System</h2>
