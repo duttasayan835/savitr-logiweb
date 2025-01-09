@@ -13,6 +13,7 @@ export default function ModifySchedulePage() {
     currentTimeSlot: string;
     typeOfConsignment: string;
   } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuthAndFetchData = async () => {
@@ -32,7 +33,7 @@ export default function ModifySchedulePage() {
           .from("delivery_slots")
           .select("*")
           .eq("consignment_no", testConsignmentNo)
-          .maybeSingle(); // Changed from single() to maybeSingle()
+          .maybeSingle();
 
         if (error) {
           console.error("Error fetching delivery data:", error);
@@ -62,16 +63,26 @@ export default function ModifySchedulePage() {
           description: "Failed to load delivery information. Please try again later.",
           variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
     };
 
     checkAuthAndFetchData();
   }, [navigate, toast]);
 
-  if (!deliveryData) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading delivery information...</p>
+      </div>
+    );
+  }
+
+  if (!deliveryData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>No delivery information found.</p>
       </div>
     );
   }
