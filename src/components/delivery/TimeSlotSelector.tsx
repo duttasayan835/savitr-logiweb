@@ -11,39 +11,46 @@ interface TimeSlotSelectorProps {
 export function TimeSlotSelector({ selectedTimeSlot, onTimeSlotChange, additionalCharges }: TimeSlotSelectorProps) {
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">Select your time-slot</Label>
+      <Label className="text-sm font-medium flex items-center">
+        <span className="text-red-500 mr-1">*</span>
+        Select your time-slot
+      </Label>
       <RadioGroup
         value={selectedTimeSlot}
         onValueChange={onTimeSlotChange}
-        className="grid grid-cols-1 gap-2 p-4 bg-muted/10 rounded-lg border border-muted"
+        className="grid grid-cols-2 gap-4"
       >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="morning" id="morning" />
-          <Label htmlFor="morning" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Morning Slot (10:00AM-12:00PM)
-          </Label>
+        <div className="p-3 bg-white border rounded hover:bg-gray-50">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="morning" id="morning" />
+            <Label htmlFor="morning" className="text-sm">
+              Morning Slot (10:00AM-12:00PM)
+            </Label>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="afternoon" id="afternoon" />
-          <Label htmlFor="afternoon" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Afternoon Slot (12:00PM-3:00PM)
-          </Label>
+        <div className="p-3 bg-white border rounded hover:bg-gray-50">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="afternoon" id="afternoon" />
+            <Label htmlFor="afternoon" className="text-sm">
+              Afternoon Slot (12:00PM-3:00PM)
+            </Label>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="evening" id="evening" />
-          <Label htmlFor="evening" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Evening Slot (3:00PM-5:00PM)
-          </Label>
+        <div className="p-3 bg-white border rounded hover:bg-gray-50">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="evening" id="evening" />
+            <Label htmlFor="evening" className="text-sm">
+              Evening Slot (3:00PM-5:00PM)
+            </Label>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="custom" id="custom" />
-          <Label htmlFor="custom" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Customize your Slot
-          </Label>
+        <div className="p-3 bg-white border rounded hover:bg-gray-50">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="custom" id="custom" />
+            <Label htmlFor="custom" className="text-sm">
+              Customize your Slot
+            </Label>
+          </div>
         </div>
       </RadioGroup>
     </div>
