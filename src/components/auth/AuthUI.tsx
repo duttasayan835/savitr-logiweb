@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthErrorHandler } from "./AuthErrorHandler";
 import { useAuthStateManager } from "./AuthStateManager";
 import { useEffect } from "react";
+import { AuthError } from "@supabase/supabase-js";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
@@ -19,10 +20,12 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
   console.log("Redirect URL:", redirectTo);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.error) {
-        console.error("Auth error occurred:", session.error);
-        handleAuthError(session.error);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'AUTH_ERROR') {
+        console.log("Auth error detected");
+        // Handle auth error through the error handler
+        const error = new AuthError('Authentication error occurred');
+        handleAuthError(error);
       }
     });
 

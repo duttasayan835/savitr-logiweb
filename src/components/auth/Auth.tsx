@@ -6,6 +6,7 @@ import { AuthTabs } from "./AuthTabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthError } from "@supabase/supabase-js";
 
 export function Auth() {
   const [isOpen, setIsOpen] = useState(true);
@@ -15,6 +16,8 @@ export function Auth() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change event:", event);
+      
       if (event === "SIGNED_OUT") {
         toast({
           title: "Signed out",
@@ -25,12 +28,23 @@ export function Auth() {
           title: "Password recovery",
           description: "Check your email for password reset instructions.",
         });
-      } else if (event === "SIGNED_IN" && session?.error) {
-        console.error("Auth error in main component:", session.error);
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Set up error listener
+    const handleAuthError = (error: AuthError) => {
+      console.error("Auth error in main component:", error);
+      toast({
+        title: "Authentication Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    };
+
+    // Clean up subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [toast]);
 
   const handleContinue = async () => {
