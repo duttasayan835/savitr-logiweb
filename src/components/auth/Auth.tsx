@@ -25,6 +25,8 @@ export function Auth() {
           title: "Password recovery",
           description: "Check your email for password reset instructions.",
         });
+      } else if (event === "SIGNED_IN" && session?.error) {
+        console.error("Auth error in main component:", session.error);
       }
     });
 

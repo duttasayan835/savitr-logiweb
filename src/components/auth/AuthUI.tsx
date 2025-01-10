@@ -3,6 +3,7 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthErrorHandler } from "./AuthErrorHandler";
 import { useAuthStateManager } from "./AuthStateManager";
+import { useEffect } from "react";
 
 interface AuthUIProps {
   view: "sign_up" | "sign_in";
@@ -16,6 +17,17 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
   const redirectTo = `${window.location.origin}/auth/callback`;
   console.log("Auth UI initialized with view:", view);
   console.log("Redirect URL:", redirectTo);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.error) {
+        console.error("Auth error occurred:", session.error);
+        handleAuthError(session.error);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [handleAuthError]);
 
   return (
     <SupabaseAuth
@@ -33,10 +45,6 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
       }}
       providers={[]}
       redirectTo={redirectTo}
-      onError={(error) => {
-        console.error("Auth error occurred:", error);
-        handleAuthError(error);
-      }}
       localization={{
         variables: {
           sign_up: {
