@@ -18,7 +18,8 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
         providers={[]}
         view={view as ViewType}
         showLinks={false}
-        onViewChange={({ view: newView }) => {
+        onViewChange={(event) => {
+          const newView = event.view;
           if (newView === "sign_in" || newView === "sign_up") {
             onViewChange(newView);
           }
