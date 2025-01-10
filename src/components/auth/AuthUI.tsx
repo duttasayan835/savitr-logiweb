@@ -33,6 +33,10 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
       }}
       providers={[]}
       redirectTo={redirectTo}
+      onError={(error) => {
+        console.error("Auth error occurred:", error);
+        handleAuthError(error);
+      }}
       localization={{
         variables: {
           sign_up: {
