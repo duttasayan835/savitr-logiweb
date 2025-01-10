@@ -23,7 +23,7 @@ export function AuthUI({ view, onViewChange }: AuthUIProps) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       console.log("Auth state change event:", event);
       
-      if (event === "USER_DELETED" || event === "SIGNED_OUT") {
+      if (event === 'SIGNED_OUT') {
         // Handle potential auth errors through the error handler
         const error = new AuthError('Authentication error occurred');
         handleAuthError(error);
