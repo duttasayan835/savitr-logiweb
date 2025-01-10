@@ -76,6 +76,7 @@ const App = () => {
         <AuthStateListener />
         <Navigation />
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<HomePage />} />
           <Route 
             path="/login" 
@@ -83,40 +84,40 @@ const App = () => {
               !user ? (
                 <LoginPage />
               ) : (
-                <Navigate to={isAdmin ? "/admin/parcels" : "/dashboard"} />
+                <Navigate to={isAdmin ? "/admin/dashboard" : "/recipient/dashboard"} />
               )
             } 
           />
+
+          {/* Recipient routes */}
           <Route 
-            path="/dashboard" 
+            path="/recipient/dashboard" 
             element={
-              user ? (
-                isAdmin ? (
-                  <Navigate to="/admin/parcels" />
-                ) : (
-                  <RecipientDashboard />
-                )
+              user && !isAdmin ? (
+                <RecipientDashboard />
               ) : (
-                <Navigate to="/login" />
+                <Navigate to={isAdmin ? "/admin/dashboard" : "/login"} />
               )
             } 
           />
           <Route 
             path="/delivery/modify" 
             element={
-              user ? (
+              user && !isAdmin ? (
                 <ModifySchedulePage />
               ) : (
                 <Navigate to="/login" state={{ from: "/delivery/modify" }} />
               )
             } 
           />
+
+          {/* Admin routes */}
           <Route 
             path="/admin/*" 
             element={
               user && isAdmin ? (
                 <Routes>
-                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/parcels" element={<ParcelManagementPage />} />
                   <Route path="/slots" element={<SlotManagement />} />
                   <Route path="/tracker" element={<ConsignmentTracker />} />
@@ -127,6 +128,9 @@ const App = () => {
               )
             } 
           />
+
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </NotificationProvider>
     </Router>

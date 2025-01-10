@@ -28,14 +28,13 @@ export function AuthStateListener() {
           }
 
           if (adminProfile) {
-            navigate("/admin/parcels");
+            navigate("/admin/dashboard");
             toast({
               title: "Welcome Admin",
               description: "You have been signed in successfully.",
             });
           } else {
-            // For regular users, redirect to delivery modification page
-            navigate("/delivery/modify");
+            navigate("/recipient/dashboard");
             toast({
               title: "Welcome",
               description: "You have been signed in successfully.",
