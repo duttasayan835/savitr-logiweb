@@ -8,6 +8,7 @@ import { TimeSlotSelector } from "./TimeSlotSelector";
 import { DateSelector } from "./DateSelector";
 import { CustomTimeInput } from "./CustomTimeInput";
 import { format } from "date-fns";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 interface DeliveryModificationProps {
   consignmentNo: string;
@@ -23,6 +24,7 @@ export function DeliveryModification({
   typeOfConsignment,
 }: DeliveryModificationProps) {
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(currentDate);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(currentTimeSlot);
   const [customTime, setCustomTime] = useState("16:30");
@@ -82,6 +84,13 @@ export function DeliveryModification({
 
         if (chargeError) throw chargeError;
       }
+
+      // Send notification to admin
+      await addNotification({
+        title: "Delivery Modification Request",
+        message: `Consignment ${consignmentNo} delivery schedule has been modified. New date: ${format(selectedDate || currentDate, "dd/MM/yyyy")}, Time slot: ${selectedTimeSlot}${additionalCharges > 0 ? ` (Additional charges: ₹${additionalCharges})` : ""}`,
+        type: "delivery_modification",
+      });
 
       toast({
         title: "Schedule updated",
@@ -212,4 +221,4 @@ export function DeliveryModification({
       </div>
     </Card>
   );
-}
+};

@@ -13,6 +13,7 @@ import RecipientDashboard from "@/components/recipient/RecipientDashboard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthStateListener } from "@/components/auth/AuthStateListener";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -71,61 +72,63 @@ const App = () => {
 
   return (
     <Router>
-      <AuthStateListener />
-      <Navigation />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route 
-          path="/login" 
-          element={
-            !user ? (
-              <LoginPage />
-            ) : (
-              <Navigate to={isAdmin ? "/admin/parcels" : "/dashboard"} />
-            )
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            user ? (
-              isAdmin ? (
-                <Navigate to="/admin/parcels" />
+      <NotificationProvider>
+        <AuthStateListener />
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route 
+            path="/login" 
+            element={
+              !user ? (
+                <LoginPage />
               ) : (
-                <RecipientDashboard />
+                <Navigate to={isAdmin ? "/admin/parcels" : "/dashboard"} />
               )
-            ) : (
-              <Navigate to="/login" />
-            )
-          } 
-        />
-        <Route 
-          path="/delivery/modify" 
-          element={
-            user ? (
-              <ModifySchedulePage />
-            ) : (
-              <Navigate to="/login" state={{ from: "/delivery/modify" }} />
-            )
-          } 
-        />
-        <Route 
-          path="/admin/*" 
-          element={
-            user && isAdmin ? (
-              <Routes>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/parcels" element={<ParcelManagementPage />} />
-                <Route path="/slots" element={<SlotManagement />} />
-                <Route path="/tracker" element={<ConsignmentTracker />} />
-                <Route path="/pod" element={<GeneratePOD />} />
-              </Routes>
-            ) : (
-              <Navigate to="/login" />
-            )
-          } 
-        />
-      </Routes>
+            } 
+          />
+          <Route 
+            path="/dashboard" 
+            element={
+              user ? (
+                isAdmin ? (
+                  <Navigate to="/admin/parcels" />
+                ) : (
+                  <RecipientDashboard />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            } 
+          />
+          <Route 
+            path="/delivery/modify" 
+            element={
+              user ? (
+                <ModifySchedulePage />
+              ) : (
+                <Navigate to="/login" state={{ from: "/delivery/modify" }} />
+              )
+            } 
+          />
+          <Route 
+            path="/admin/*" 
+            element={
+              user && isAdmin ? (
+                <Routes>
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/parcels" element={<ParcelManagementPage />} />
+                  <Route path="/slots" element={<SlotManagement />} />
+                  <Route path="/tracker" element={<ConsignmentTracker />} />
+                  <Route path="/pod" element={<GeneratePOD />} />
+                </Routes>
+              ) : (
+                <Navigate to="/login" />
+              )
+            } 
+          />
+        </Routes>
+      </NotificationProvider>
     </Router>
   );
 };
