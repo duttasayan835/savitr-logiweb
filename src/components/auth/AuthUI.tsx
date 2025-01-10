@@ -16,11 +16,11 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
         appearance={{ theme: ThemeSupa }}
         theme="light"
         providers={[]}
-        view={view}
-        showLinks={true}
-        onViewChange={({ view }) => {
-          if (view === "sign_in" || view === "sign_up") {
-            onViewChange(view);
+        view={view as ViewType}
+        showLinks={false}
+        onViewChange={({ view: newView }) => {
+          if (newView === "sign_in" || newView === "sign_up") {
+            onViewChange(newView);
           }
         }}
       />
