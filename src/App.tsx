@@ -7,11 +7,14 @@ import RecipientDashboard from "@/components/recipient/RecipientDashboard";
 import LoginPage from "@/pages/auth/Login";
 import { useAuthStateManager } from "@/components/auth/AuthStateManager";
 import { Auth } from "@/components/auth/Auth";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 function App() {
   return (
     <Router>
-      <AppContent />
+      <NotificationProvider>
+        <AppContent />
+      </NotificationProvider>
     </Router>
   );
 }

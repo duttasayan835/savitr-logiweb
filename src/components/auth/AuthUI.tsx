@@ -2,7 +2,7 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 
-interface AuthUIProps {
+export interface AuthUIProps {
   view: "sign_up" | "sign_in";
   onViewChange: (view: "sign_up" | "sign_in") => void;
 }
