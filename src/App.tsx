@@ -8,6 +8,12 @@ import LoginPage from "@/pages/auth/Login";
 import { useAuthStateManager } from "@/components/auth/AuthStateManager";
 import { Auth } from "@/components/auth/Auth";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import ModifySchedulePage from "@/pages/delivery/ModifySchedule";
+import AdminDashboard from "@/pages/admin/Dashboard";
+import ParcelManagementPage from "@/pages/admin/ParcelManagement";
+import SlotManagement from "@/pages/admin/SlotManagement";
+import ConsignmentTracker from "@/pages/admin/ConsignmentTracker";
+import GeneratePOD from "@/pages/admin/GeneratePOD";
 
 function App() {
   return (
@@ -42,6 +48,54 @@ function AppContent() {
             element={
               <Auth>
                 <RecipientDashboard />
+              </Auth>
+            }
+          />
+          <Route
+            path="/delivery/modify"
+            element={
+              <Auth>
+                <ModifySchedulePage />
+              </Auth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <Auth>
+                <AdminDashboard />
+              </Auth>
+            }
+          />
+          <Route
+            path="/admin/parcels"
+            element={
+              <Auth>
+                <ParcelManagementPage />
+              </Auth>
+            }
+          />
+          <Route
+            path="/admin/slots"
+            element={
+              <Auth>
+                <SlotManagement />
+              </Auth>
+            }
+          />
+          <Route
+            path="/admin/tracker"
+            element={
+              <Auth>
+                <ConsignmentTracker />
+              </Auth>
+            }
+          />
+          <Route
+            path="/admin/pod"
+            element={
+              <Auth>
+                <GeneratePOD />
               </Auth>
             }
           />

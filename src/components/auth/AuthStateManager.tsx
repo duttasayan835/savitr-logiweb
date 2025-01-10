@@ -45,8 +45,15 @@ export const useAuthStateManager = () => {
             title: "Welcome back!",
             description: "You have successfully signed in.",
           });
-          navigate("/");
+          navigate("/recipient/dashboard");
         }
+      } else if (event === "SIGNED_OUT") {
+        console.log("User signed out");
+        toast({
+          title: "Signed out",
+          description: "You have been signed out successfully.",
+        });
+        navigate("/login");
       }
     });
 
