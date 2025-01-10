@@ -209,6 +209,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       parcels: {
         Row: {
           consignment_no: string
@@ -301,6 +334,12 @@ export type Database = {
         }
         Returns: number
       }
+      calculate_time_charges: {
+        Args: {
+          selected_time: string
+        }
+        Returns: number
+      }
       is_admin: {
         Args: {
           user_id: string
@@ -316,6 +355,7 @@ export type Database = {
         | "afternoon"
         | "evening"
         | "evening_late"
+      notification_type: "delivery_modification" | "admin_alert" | "general"
       user_type: "admin" | "recipient"
     }
     CompositeTypes: {

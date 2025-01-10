@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard, LogOut } from "lucide-react";
+import { Menu, X, Package, MapPin, FileText, Phone, LayoutDashboard, LogOut, Bell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,46 +8,48 @@ import { useToast } from "@/hooks/use-toast";
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
-    });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const { data: adminProfile } = await supabase
+          .from('admin_profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        setIsAdmin(!!adminProfile);
+      }
+    };
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       setUser(session?.user ?? null);
 
-      if (event === 'SIGNED_IN') {
-        try {
-          const { data: adminProfile, error: adminError } = await supabase
-            .from('admin_profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
+      if (session?.user) {
+        const { data: adminProfile } = await supabase
+          .from('admin_profiles')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
 
-          if (adminError) {
-            console.error("Error checking admin status:", adminError);
-            return;
-          }
-
-          if (adminProfile) {
-            console.log("Admin user detected, redirecting to admin/parcels");
-            navigate("/admin/parcels");
-          }
-        } catch (error) {
-          console.error("Error checking admin status:", error);
-        }
+        setIsAdmin(!!adminProfile);
+      } else {
+        setIsAdmin(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, []);
 
   const handleHashLinkClick = (hash: string) => {
     if (location.pathname !== '/') {
@@ -59,50 +61,6 @@ const Navigation = () => {
       }
     }
     setIsOpen(false);
-  };
-
-  const handleAdminClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const { data: adminProfile, error } = await supabase
-        .from('admin_profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error checking admin status:", error);
-        toast({
-          title: "Error",
-          description: "An error occurred while checking permissions.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (adminProfile) {
-        navigate("/admin/parcels");
-      } else {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to access the admin dashboard.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error in admin check:", error);
-      toast({
-        title: "Error",
-        description: "An error occurred while checking permissions.",
-        variant: "destructive",
-      });
-    }
   };
 
   const handleLogout = async () => {
@@ -128,13 +86,28 @@ const Navigation = () => {
     setIsOpen(false);
   };
 
-  const menuItems = [
+  const publicMenuItems = [
     { name: "Track Package", icon: Package, hash: "#track" },
     { name: "Find Branch", icon: MapPin, hash: "#branches" },
     { name: "Services", icon: FileText, hash: "#services" },
     { name: "Contact", icon: Phone, hash: "#contact" },
-    { name: "Admin", icon: LayoutDashboard, onClick: handleAdminClick },
   ];
+
+  const adminMenuItems = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/parcels" },
+    { name: "Parcels", icon: Package, path: "/admin/parcels" },
+    { name: "Slots", icon: FileText, path: "/admin/slots" },
+    { name: "Tracker", icon: MapPin, path: "/admin/tracker" },
+  ];
+
+  const recipientMenuItems = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+    { name: "Track Package", icon: Package, hash: "#track" },
+  ];
+
+  const menuItems = user 
+    ? (isAdmin ? adminMenuItems : recipientMenuItems)
+    : publicMenuItems;
 
   return (
     <nav className="fixed w-full bg-white/80 backdrop-blur-md z-50 shadow-sm">
@@ -158,14 +131,14 @@ const Navigation = () => {
                   <span>{item.name}</span>
                 </button>
               ) : (
-                <button
+                <Link
                   key={item.name}
-                  onClick={item.onClick}
+                  to={item.path}
                   className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors"
                 >
                   <item.icon className="h-4 w-4" />
                   <span>{item.name}</span>
-                </button>
+                </Link>
               )
             ))}
             {user ? (
@@ -211,19 +184,15 @@ const Navigation = () => {
                     <span>{item.name}</span>
                   </button>
                 ) : (
-                  <button
+                  <Link
                     key={item.name}
-                    onClick={(e) => {
-                      if (item.onClick) {
-                        item.onClick(e);
-                      }
-                      setIsOpen(false);
-                    }}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium w-full text-left"
+                    to={item.path}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-primary px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsOpen(false)}
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.name}</span>
-                  </button>
+                  </Link>
                 )
               ))}
               {user ? (
