@@ -1,6 +1,7 @@
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { ViewType } from "@supabase/auth-ui-shared";
 
 export interface AuthUIProps {
   view: "sign_up" | "sign_in";
@@ -16,7 +17,12 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
         theme="light"
         providers={[]}
         view={view}
-        onViewChange={({ view }) => onViewChange(view as "sign_up" | "sign_in")}
+        showLinks={true}
+        onViewChange={({ view }) => {
+          if (view === "sign_in" || view === "sign_up") {
+            onViewChange(view);
+          }
+        }}
       />
     </div>
   );
