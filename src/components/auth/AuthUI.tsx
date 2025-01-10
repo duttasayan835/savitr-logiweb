@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { ViewType } from "@supabase/auth-ui-shared";
 import { AccountTypeDialog } from "./AccountTypeDialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,6 +17,24 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
   const [userType, setUserType] = useState<"recipient" | "admin">("recipient");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
+      
+      if (event === 'SIGNED_IN') {
+        if (view === "sign_up") {
+          setShowAccountTypeDialog(true);
+        } else {
+          await handleSignIn();
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [view]);
 
   const handleSignIn = async () => {
     try {
@@ -102,13 +120,6 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
         providers={[]}
         view={view as ViewType}
         showLinks={false}
-        onSuccess={async () => {
-          if (view === "sign_up") {
-            setShowAccountTypeDialog(true);
-          } else {
-            await handleSignIn();
-          }
-        }}
       />
       <div className="mt-4 text-center">
         <button
