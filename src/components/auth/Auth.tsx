@@ -31,7 +31,7 @@ export function Auth() {
       }
     });
 
-    // Set up error listener
+    // Set up error listener for auth events
     const handleAuthError = (error: AuthError) => {
       console.error("Auth error in main component:", error);
       toast({
@@ -41,9 +41,11 @@ export function Auth() {
       });
     };
 
-    // Clean up subscription
+    window.addEventListener('supabase.auth.error', (e: CustomEvent<AuthError>) => handleAuthError(e.detail));
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('supabase.auth.error', (e: CustomEvent<AuthError>) => handleAuthError(e.detail));
     };
   }, [toast]);
 
