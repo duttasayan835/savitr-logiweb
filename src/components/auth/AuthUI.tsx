@@ -5,6 +5,7 @@ import { ViewType } from "@supabase/auth-ui-shared";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { useAuthErrorHandler } from "./AuthErrorHandler";
 
 export interface AuthUIProps {
   view: "sign_up" | "sign_in";
@@ -15,6 +16,7 @@ export interface AuthUIProps {
 export const AuthUI = ({ view, onViewChange, userType }: AuthUIProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { handleAuthError } = useAuthErrorHandler({ onViewChange });
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -81,11 +83,7 @@ export const AuthUI = ({ view, onViewChange, userType }: AuthUIProps) => {
         } catch (error) {
           console.error('Error during authentication:', error);
           await supabase.auth.signOut();
-          toast({
-            title: "Authentication Error",
-            description: error instanceof Error ? error.message : "An error occurred during authentication",
-            variant: "destructive",
-          });
+          handleAuthError(error as any);
         }
       }
     });

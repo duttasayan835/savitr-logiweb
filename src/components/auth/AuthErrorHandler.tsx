@@ -13,6 +13,7 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
     
     let errorDetails;
     try {
+      // Try to parse error details from the message if it contains JSON
       const errorBody = error.message.includes('{') ? 
         error.message.substring(error.message.indexOf('{')) : 
         error.message;
@@ -28,24 +29,6 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
     }
 
     switch (errorDetails.code) {
-      case "anonymous_provider_disabled":
-        console.log("Anonymous sign-in attempted but disabled");
-        toast({
-          title: "Authentication Error",
-          description: "Please sign in with your email and password.",
-          variant: "destructive",
-        });
-        break;
-
-      case "invalid_credentials":
-        console.log("Invalid credentials provided");
-        toast({
-          title: "Invalid credentials",
-          description: "Please check your email and password and try again. If you haven't registered yet, please sign up first.",
-          variant: "destructive",
-        });
-        break;
-
       case "user_already_exists":
         console.log("User already exists, switching to sign in");
         toast({
@@ -56,15 +39,17 @@ export const useAuthErrorHandler = ({ onViewChange }: AuthErrorHandlerProps) => 
         onViewChange?.("sign_in");
         break;
 
+      case "invalid_credentials":
+        console.log("Invalid credentials provided");
+        toast({
+          title: "Invalid credentials",
+          description: "Please check your email and password and try again.",
+          variant: "destructive",
+        });
+        break;
+
       default:
-        if (errorDetails.message.includes("Invalid login credentials")) {
-          console.log("Invalid login credentials (message check)");
-          toast({
-            title: "Invalid credentials",
-            description: "Please check your email and password and try again. If you haven't registered yet, please sign up first.",
-            variant: "destructive",
-          });
-        } else if (errorDetails.message.includes("already registered")) {
+        if (errorDetails.message.includes("User already registered")) {
           console.log("User already registered (message check)");
           toast({
             title: "Account exists",
