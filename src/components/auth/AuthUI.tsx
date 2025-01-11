@@ -2,19 +2,17 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { ViewType } from "@supabase/auth-ui-shared";
-import { AccountTypeDialog } from "./AccountTypeDialog";
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 export interface AuthUIProps {
   view: "sign_up" | "sign_in";
   onViewChange: (view: "sign_up" | "sign_in") => void;
+  userType: "recipient" | "admin";
 }
 
-export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
-  const [showAccountTypeDialog, setShowAccountTypeDialog] = useState(false);
-  const [userType, setUserType] = useState<"recipient" | "admin">("recipient");
+export const AuthUI = ({ view, onViewChange, userType }: AuthUIProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -23,10 +21,71 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
       console.log("Auth state changed:", event);
       
       if (event === 'SIGNED_IN') {
-        if (view === "sign_up") {
-          setShowAccountTypeDialog(true);
-        } else {
-          await handleSignIn();
+        try {
+          if (session) {
+            if (userType === 'admin') {
+              // Create or verify admin profile
+              const { data: adminProfile, error: adminError } = await supabase
+                .from('admin_profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+
+              if (view === "sign_up" && !adminProfile) {
+                // Create new admin profile
+                const { error: createError } = await supabase
+                  .from('admin_profiles')
+                  .insert([
+                    {
+                      user_id: session.user.id,
+                      name: session.user.email?.split('@')[0] || 'Admin User',
+                      role: 'admin'
+                    }
+                  ]);
+
+                if (createError) throw createError;
+                navigate('/admin');
+              } else if (adminProfile) {
+                navigate('/admin');
+              } else {
+                throw new Error("Unauthorized access to admin portal");
+              }
+            } else {
+              // Handle recipient login/signup
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+              if (view === "sign_up" && !profile) {
+                // Create new recipient profile
+                const { error: createError } = await supabase
+                  .from('profiles')
+                  .insert([
+                    {
+                      id: session.user.id,
+                      user_type: 'recipient'
+                    }
+                  ]);
+
+                if (createError) throw createError;
+                navigate('/recipient/dashboard');
+              } else if (profile) {
+                navigate('/recipient/dashboard');
+              } else {
+                throw new Error("Profile not found");
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error during authentication:', error);
+          await supabase.auth.signOut();
+          toast({
+            title: "Authentication Error",
+            description: error instanceof Error ? error.message : "An error occurred during authentication",
+            variant: "destructive",
+          });
         }
       }
     });
@@ -34,85 +93,10 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [view]);
-
-  const handleSignIn = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) throw error;
-      
-      if (session) {
-        // Check if user is an admin
-        const { data: adminProfile } = await supabase
-          .from('admin_profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (adminProfile) {
-          navigate('/admin');
-        } else {
-          navigate('/recipient/dashboard');
-        }
-      }
-    } catch (error) {
-      console.error('Error during sign in:', error);
-      toast({
-        title: "Error",
-        description: "An error occurred during sign in. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleContinue = async () => {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
-
-      if (session) {
-        if (userType === "admin") {
-          // Create admin profile
-          const { error: profileError } = await supabase
-            .from('admin_profiles')
-            .insert([
-              {
-                user_id: session.user.id,
-                name: session.user.email?.split('@')[0] || 'Admin User',
-                role: 'admin'
-              }
-            ]);
-
-          if (profileError) throw profileError;
-          navigate('/admin');
-        } else {
-          // Create recipient profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: session.user.id,
-                user_type: 'recipient'
-              }
-            ]);
-
-          if (profileError) throw profileError;
-          navigate('/recipient/dashboard');
-        }
-      }
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      toast({
-        title: "Error",
-        description: "An error occurred while setting up your account. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  }, [navigate, toast, userType, view]);
 
   return (
-    <div className="w-full max-w-[400px] mx-auto p-4 rounded-lg bg-white shadow-lg">
+    <div className="w-full">
       <SupabaseAuth
         supabaseClient={supabase}
         appearance={{ theme: ThemeSupa }}
@@ -129,13 +113,6 @@ export const AuthUI = ({ view, onViewChange }: AuthUIProps) => {
           {view === "sign_in" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
         </button>
       </div>
-      <AccountTypeDialog
-        isOpen={showAccountTypeDialog}
-        setIsOpen={setShowAccountTypeDialog}
-        userType={userType}
-        setUserType={setUserType}
-        onContinue={handleContinue}
-      />
     </div>
   );
 };
