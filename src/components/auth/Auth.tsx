@@ -1,59 +1,21 @@
-import { ReactNode, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { ReactNode } from "react";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
 
 interface AuthProps {
   children: ReactNode;
+  requiredRole?: "admin" | "recipient";
 }
 
-export const Auth = ({ children }: AuthProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
+export const Auth = ({ children, requiredRole }: AuthProps) => {
+  const { isLoading } = useAuthCheck(requiredRole);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/login");
-        return;
-      }
-
-      // Check if trying to access admin routes
-      if (location.pathname.startsWith('/admin')) {
-        const { data: adminProfile, error } = await supabase
-          .from('admin_profiles')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (error || !adminProfile) {
-          console.log("User is not authorized to access admin routes");
-          toast({
-            title: "Access Denied",
-            description: "You don't have permission to access this page.",
-            variant: "destructive",
-          });
-          navigate("/recipient/dashboard");
-          return;
-        }
-      }
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!session) {
-          navigate("/login");
-        }
-      }
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
-
-    return () => subscription.unsubscribe();
-  }, [navigate, location.pathname, toast]);
+  }
 
   return <>{children}</>;
 };

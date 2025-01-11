@@ -38,7 +38,7 @@ function AppContent() {
           <Route
             path="/consumer/dashboard"
             element={
-              <Auth>
+              <Auth requiredRole="recipient">
                 <ConsumerDashboard />
               </Auth>
             }
@@ -46,7 +46,7 @@ function AppContent() {
           <Route
             path="/recipient/dashboard"
             element={
-              <Auth>
+              <Auth requiredRole="recipient">
                 <RecipientDashboard />
               </Auth>
             }
@@ -54,7 +54,7 @@ function AppContent() {
           <Route
             path="/delivery/modify"
             element={
-              <Auth>
+              <Auth requiredRole="recipient">
                 <ModifySchedulePage />
               </Auth>
             }
@@ -62,7 +62,7 @@ function AppContent() {
           <Route
             path="/admin"
             element={
-              <Auth>
+              <Auth requiredRole="admin">
                 <AdminDashboard />
               </Auth>
             }
@@ -70,7 +70,7 @@ function AppContent() {
           <Route
             path="/admin/parcels"
             element={
-              <Auth>
+              <Auth requiredRole="admin">
                 <ParcelManagementPage />
               </Auth>
             }
@@ -78,7 +78,7 @@ function AppContent() {
           <Route
             path="/admin/slots"
             element={
-              <Auth>
+              <Auth requiredRole="admin">
                 <SlotManagement />
               </Auth>
             }
@@ -86,7 +86,7 @@ function AppContent() {
           <Route
             path="/admin/tracker"
             element={
-              <Auth>
+              <Auth requiredRole="admin">
                 <ConsignmentTracker />
               </Auth>
             }
@@ -94,7 +94,7 @@ function AppContent() {
           <Route
             path="/admin/pod"
             element={
-              <Auth>
+              <Auth requiredRole="admin">
                 <GeneratePOD />
               </Auth>
             }
