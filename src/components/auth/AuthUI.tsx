@@ -26,26 +26,28 @@ export const AuthUI = ({ view, onViewChange, userType }: AuthUIProps) => {
         try {
           if (session) {
             if (userType === 'admin') {
-              // Create or verify admin profile
+              // Check for existing admin profile
               const { data: adminProfile, error: adminError } = await supabase
                 .from('admin_profiles')
                 .select('*')
                 .eq('user_id', session.user.id)
-                .single();
+                .maybeSingle();
 
-              if (view === "sign_up" && !adminProfile) {
-                // Create new admin profile
-                const { error: createError } = await supabase
-                  .from('admin_profiles')
-                  .insert([
-                    {
-                      user_id: session.user.id,
-                      name: session.user.email?.split('@')[0] || 'Admin User',
-                      role: 'admin'
-                    }
-                  ]);
+              if (view === "sign_up") {
+                if (!adminProfile) {
+                  // Create new admin profile
+                  const { error: createError } = await supabase
+                    .from('admin_profiles')
+                    .insert([
+                      {
+                        user_id: session.user.id,
+                        name: session.user.email?.split('@')[0] || 'Admin User',
+                        role: 'admin'
+                      }
+                    ]);
 
-                if (createError) throw createError;
+                  if (createError) throw createError;
+                }
                 navigate('/admin');
               } else if (adminProfile) {
                 navigate('/admin');
@@ -53,25 +55,32 @@ export const AuthUI = ({ view, onViewChange, userType }: AuthUIProps) => {
                 throw new Error("Unauthorized access to admin portal");
               }
             } else {
-              // Handle recipient login/signup
+              // Check for existing recipient profile
               const { data: profile, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', session.user.id)
-                .single();
+                .maybeSingle();
 
-              if (view === "sign_up" && !profile) {
-                // Create new recipient profile
+              if (view === "sign_up" || !profile) {
+                // Create new recipient profile if it doesn't exist
                 const { error: createError } = await supabase
                   .from('profiles')
-                  .insert([
+                  .upsert([
                     {
                       id: session.user.id,
-                      user_type: 'recipient'
+                      user_type: 'recipient',
+                      full_name: session.user.email?.split('@')[0] || 'User'
                     }
-                  ]);
+                  ], {
+                    onConflict: 'id'
+                  });
 
-                if (createError) throw createError;
+                if (createError) {
+                  console.error('Error creating profile:', createError);
+                  throw createError;
+                }
+                
                 navigate('/recipient/dashboard');
               } else if (profile) {
                 navigate('/recipient/dashboard');
