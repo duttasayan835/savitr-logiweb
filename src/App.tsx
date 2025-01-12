@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import Navigation from "@/components/Navigation";
 import HomePage from "@/pages/Index";
@@ -33,8 +33,11 @@ function AppContent() {
       <Navigation />
       <main>
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected consumer routes */}
           <Route
             path="/consumer/dashboard"
             element={
@@ -43,6 +46,8 @@ function AppContent() {
               </Auth>
             }
           />
+
+          {/* Protected recipient routes */}
           <Route
             path="/recipient/dashboard"
             element={
@@ -59,6 +64,8 @@ function AppContent() {
               </Auth>
             }
           />
+
+          {/* Protected admin routes */}
           <Route
             path="/admin"
             element={
@@ -99,6 +106,9 @@ function AppContent() {
               </Auth>
             }
           />
+
+          {/* Catch-all route for 404s - redirect to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <Toaster />
